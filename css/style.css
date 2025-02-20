@@ -1,0 +1,90 @@
+html,
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    text-align: center;
+}
+
+p,
+.reading {
+    font-size: 1.2rem;
+}
+
+.topnav {
+    overflow: hidden;
+    background-color: #003366;
+    color: #FFD43B;
+    font-size: 1rem;
+}
+
+.content {
+    padding: 20px;
+}
+
+.card {
+    background-color: white;
+    box-shadow: 2px 2px 12px 1px rgba(140, 140, 140, .5);
+}
+
+.card-title {
+    color: #003366;
+    font-weight: bold;
+}
+
+.cards {
+    display: grid;
+    grid-gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    justify-content: center;
+}
+
+.cube-content {
+    width: 100%;
+    height: 16rem;
+    margin: auto;
+    padding-top: 1rem;
+}
+
+.control-card {
+    display: grid;
+    grid-gap: .3em;
+    grid-template-columns: repeat(2, minmax(6rem, 1fr));
+    padding: 0 1rem 1rem;
+    justify-content: center;
+}
+
+.control {
+    background-color: #ef4835;
+    height: 2em;
+    line-height: 2em;
+    font-weight: bold;
+    color: white;
+}
+
+.control.active {
+    background-color: limegreen;
+}
+
+.get-data,
+.disconnect {
+    border: none;
+    color: #FEFCFB;
+    background-color: #003366;
+    padding: 0.75rem 2rem;
+    text-align: center;
+    border-radius: 0.3rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+}
+
+.disconnect {
+    margin-top: 0;
+}
+
+@media (max-width: 576px) {
+
+    .get-data,
+    .disconnect {
+        margin: 0 0 1rem 0;
+    }
+}

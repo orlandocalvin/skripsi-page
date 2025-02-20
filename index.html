@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="icon/favicon.ico" type="image/x-icon">
+    <title>ROSUS - MPU6050</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script> -->
+    <script src="js/mqtt.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+    <script src="js/three.min.js"></script>
+</head>
+
+<body>
+    <header class="topnav">
+        <h1>ROSUS - MPU6050</h1>
+    </header>
+
+    <main class="content">
+        <section class="cards">
+            <!-- Gyroscope Card -->
+            <article class="card">
+                <h2 class="card-title">Gyroscope</h2>
+                <p><span class="reading">X: <span id="gyroX">0</span> rad/s</span></p>
+                <p><span class="reading">Y: <span id="gyroY">0</span> rad/s</span></p>
+                <p><span class="reading">Z: <span id="gyroZ">0</span> rad/s</span></p>
+            </article>
+
+            <!-- Acceleration Card -->
+            <article class="card">
+                <h2 class="card-title">Acceleration</h2>
+                <p><span class="reading">X: <span id="accX">0</span> m/s<sup>2</sup></span></p>
+                <p><span class="reading">Y: <span id="accY">0</span> m/s<sup>2</sup></span></p>
+                <p><span class="reading">Z: <span id="accZ">0</span> m/s<sup>2</sup></span></p>
+            </article>
+
+            <!-- Orientation Card -->
+            <article class="card">
+                <h2 class="card-title">Orientation</h2>
+                <p><span class="reading">Roll: <span id="roll">0</span> rad</span></p>
+                <p><span class="reading">Pitch: <span id="pitch">0</span> rad</span></p>
+                <p><span class="reading">Yaw: <span id="yaw">0</span> rad</span></p>
+            </article>
+
+            <!-- Connection Info Card -->
+            <article class="card">
+                <h2 class="card-title">Connection Info</h2>
+                <p>SSID: <span id="ssid">ssid</span></p>
+                <p>IP Address: <span id="ip">ip</span></p>
+                <a href="./disconnect"><button class="disconnect">Disconnect</button></a>
+            </article>
+
+            <!-- Temperature Card -->
+            <article class="card">
+                <h2 class="card-title">Temperature</h2>
+                <p><span class="reading"><span id="temp">0</span>&deg; C</span></p>
+                <a href="./data"><button class="get-data">Get All Data</button></a>
+            </article>
+        </section>
+
+        <!-- 3D Cube Section -->
+        <section class="cube-content">
+            <div id="3Dcube"></div>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
