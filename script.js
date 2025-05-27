@@ -2,6 +2,12 @@ const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt')
 const mqttTopic = "orca/skripsi/esp/remote"
 let lightOn = false
 
+let intervalId = null
+const commandInterval = 15 // ms
+
+let lockedButtonId = null
+let lockedCommandIntervalId = null
+
 client.on('connect', () => {
     console.log("Connected to HiveMQ via MQTT over WebSocket")
 })
@@ -25,33 +31,66 @@ const controlButtons = [
     { id: "rightBtn", command: "R" }
 ]
 
-let intervalId = null
-const commandInterval = 100
-
 controlButtons.forEach(({ id, command }) => {
-    const button = document.getElementById(id)
-    if (!button) return
+    const buttonElement = document.getElementById(id)
+    if (!buttonElement) return
 
-    button.addEventListener("pointerdown", (e) => {
+    buttonElement.addEventListener("pointerdown", (e) => {
         e.preventDefault()
-        if (intervalId) clearInterval(intervalId)
-        sendCommand(command)
-        intervalId = setInterval(() => {
+        const isLockModeActive = lockToggle.checked
+
+        if (isLockModeActive) {
+            if (lockedButtonId === id) {
+                if (lockedCommandIntervalId) clearInterval(lockedCommandIntervalId)
+                lockedCommandIntervalId = null
+                lockedButtonId = null
+                sendCommand("S")
+                buttonElement.classList.remove("btn-locked")
+            } else {
+                if (lockedCommandIntervalId) {
+                    clearInterval(lockedCommandIntervalId)
+                    const previousLockedButton = document.getElementById(lockedButtonId)
+                    if (previousLockedButton) previousLockedButton.classList.remove("btn-locked")
+                    if (lockedButtonId && lockedButtonId !== id) {
+                        sendCommand("S")
+                    }
+                }
+
+                if (intervalId) {
+                    clearInterval(intervalId)
+                    intervalId = null
+                }
+
+                sendCommand(command)
+                lockedCommandIntervalId = setInterval(() => sendCommand(command), commandInterval)
+                lockedButtonId = id
+                buttonElement.classList.add("btn-locked")
+
+                // Make sure other buttons do not have the btn-locked
+                controlButtons.forEach(btn => {
+                    if (btn.id !== id) document.getElementById(btn.id)?.classList.remove("btn-locked")
+                })
+            }
+        } else { // Mode Lock OFF
+            if (intervalId) clearInterval(intervalId)
             sendCommand(command)
-        }, commandInterval)
+            intervalId = setInterval(() => sendCommand(command), commandInterval)
+        }
     })
 
-    const stopSending = (e) => {
+    const handlePointerUpLeave = (e) => {
         e.preventDefault()
-        if (intervalId) {
-            clearInterval(intervalId)
-            intervalId = null
+        if (!lockToggle.checked) { // Only if Lock mode is OFF
+            if (intervalId) {
+                clearInterval(intervalId)
+                intervalId = null
+            }
+            sendCommand("S")
         }
-        sendCommand("S")
     }
 
-    button.addEventListener("pointerup", stopSending)
-    button.addEventListener("pointerleave", stopSending)
+    buttonElement.addEventListener("pointerup", handlePointerUpLeave)
+    buttonElement.addEventListener("pointerleave", handlePointerUpLeave)
 })
 
 const lightBtn = document.getElementById("lightBtn")
@@ -67,9 +106,9 @@ lightBtn.addEventListener("click", () => {
     sendCommand(lightOn ? "W" : "w")
 
     if (lightOn) {
-        lightIcon.innerHTML = "💡"
-    } else {
         lightIcon.innerHTML = light_bulb_off
+    } else {
+        lightIcon.innerHTML = "💡"
     }
 })
 
@@ -89,5 +128,25 @@ function updateLockStatusText() {
     }
 }
 
-updateLockStatusText()
-lockToggle.addEventListener('change', updateLockStatusText)
+lockToggle.addEventListener('change', function () {
+    updateLockStatusText()
+
+    // Stop locked command
+    if (lockedCommandIntervalId) {
+        clearInterval(lockedCommandIntervalId)
+        lockedCommandIntervalId = null
+        const currentLockedButtonElem = document.getElementById(lockedButtonId)
+        if (currentLockedButtonElem) {
+            currentLockedButtonElem.classList.remove("btn-locked")
+        }
+        lockedButtonId = null
+        sendCommand("S")
+    }
+
+    // Stop non-locked command
+    if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+        sendCommand("S")
+    }
+})

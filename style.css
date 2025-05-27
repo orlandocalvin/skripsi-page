@@ -128,6 +128,12 @@ body {
     box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
+.control-btn.btn-locked {
+    background-color: #b8bdc2;
+    transform: scale(0.95);
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
 .column-left .control-btn {
     min-height: 70px;
 }
