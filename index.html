@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="icon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <title>ESP8266 WiFi Robot Car</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
 </head>
@@ -15,48 +15,57 @@
     <div class="app-container">
         <header class="app-header">
             <div class="header-title-group">
-                <span class="header-logo" aria-hidden="true">🤖</span>
+                <span class="header-logo">🤖</span>
                 <div class="header-text">
                     <h1>ESP8266 WiFi Robot Car</h1>
                     <p>192.168.4.1</p>
                 </div>
             </div>
             <div class="header-actions">
-                <span aria-label="Code/Settings" title="Code/Settings">&lt;/&gt;</span> <span class="ip-text"
-                    aria-label="IP Address" title="IP Address">IP</span>
-                <span aria-label="More options" title="More options">⋮</span>
+                <span>&lt;/&gt;</span>
+                <span class="ip-text">IP</span>
+                <span>⋮</span>
             </div>
         </header>
+
         <main class="controls-area">
             <div class="column column-left">
-                <button id="forwardBtn" class="control-btn btn-up" aria-label="Move Forward"
-                    title="Move Forward"><span>⬆️</span></button> <button id="backwardBtn" class="control-btn btn-down"
-                    aria-label="Move Backward" title="Move Backward"><span>⬇️</span></button>
+                <button id="forwardBtn" class="control-btn btn-up">
+                    <span>⬆️</span>
+                </button>
+                <button id="backwardBtn" class="control-btn btn-down">
+                    <span>⬇️</span>
+                </button>
             </div>
             <div class="column column-middle">
                 <div class="icon-buttons-pair">
-                    <button id="hornBtn" class="icon-btn btn-horn" aria-label="Horn"
-                        title="Horn"><span>📢</span></button> <button id="lightBtn" class="icon-btn btn-light"
-                        aria-label="Toggle Light" title="Toggle Light"><span>💡</span></button>
+                    <button id="hornBtn" class="icon-btn btn-horn">
+                        <span>📢</span>
+                    </button>
+                    <button id="lightBtn" class="icon-btn btn-light">
+                        <span>💡</span>
+                    </button>
                 </div>
                 <div class="lock-mechanism">
                     <span>Lock</span>
                     <label class="toggle-switch">
-                        <input type="checkbox" aria-label="Lock toggle switch">
+                        <input type="checkbox">
                         <span class="switch-lever"></span>
                     </label>
                 </div>
             </div>
             <div class="column column-right">
-                <button id="leftBtn" class="control-btn btn-left" aria-label="Turn Left" title="Turn Left"><span
-                        class="icon-left">⬅️</span></button>
-                <button id="rightBtn" class="control-btn btn-right" aria-label="Turn Right" title="Turn Right"><span
-                        class="icon-right">➡️</span></button>
+                <button id="leftBtn" class="control-btn btn-left">
+                    <span class="icon-left">⬅️</span>
+                </button>
+                <button id="rightBtn" class="control-btn btn-right">
+                    <span class="icon-right">➡️</span>
+                </button>
             </div>
         </main>
     </div>
 
-    <script src="js/script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
