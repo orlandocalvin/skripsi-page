@@ -5,68 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="icon/favicon.ico" type="image/x-icon">
-    <title>ROSUS - MPU6050</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script> -->
-    <script src="js/mqtt.min.js"></script>
+    <title>ESP8266 WiFi Robot Car</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
-    <script src="js/three.min.js"></script>
 </head>
 
 <body>
-    <header class="topnav">
-        <h1>ROSUS - MPU6050</h1>
-    </header>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title-group">
+                <span class="header-logo" aria-hidden="true">🤖</span>
+                <div class="header-text">
+                    <h1>ESP8266 WiFi Robot Car</h1>
+                    <p>192.168.4.1</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span aria-label="Code/Settings" title="Code/Settings">&lt;/&gt;</span> <span class="ip-text"
+                    aria-label="IP Address" title="IP Address">IP</span>
+                <span aria-label="More options" title="More options">⋮</span>
+            </div>
+        </header>
+        <main class="controls-area">
+            <div class="column column-left">
+                <button id="forwardBtn" class="control-btn btn-up" aria-label="Move Forward"
+                    title="Move Forward"><span>⬆️</span></button> <button id="backwardBtn" class="control-btn btn-down"
+                    aria-label="Move Backward" title="Move Backward"><span>⬇️</span></button>
+            </div>
+            <div class="column column-middle">
+                <div class="icon-buttons-pair">
+                    <button id="hornBtn" class="icon-btn btn-horn" aria-label="Horn"
+                        title="Horn"><span>📢</span></button> <button id="lightBtn" class="icon-btn btn-light"
+                        aria-label="Toggle Light" title="Toggle Light"><span>💡</span></button>
+                </div>
+                <div class="lock-mechanism">
+                    <span>Lock</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" aria-label="Lock toggle switch">
+                        <span class="switch-lever"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="column column-right">
+                <button id="leftBtn" class="control-btn btn-left" aria-label="Turn Left" title="Turn Left"><span
+                        class="icon-left">⬅️</span></button>
+                <button id="rightBtn" class="control-btn btn-right" aria-label="Turn Right" title="Turn Right"><span
+                        class="icon-right">➡️</span></button>
+            </div>
+        </main>
+    </div>
 
-    <main class="content">
-        <section class="cards">
-            <!-- Gyroscope Card -->
-            <article class="card">
-                <h2 class="card-title">Gyroscope</h2>
-                <p><span class="reading">X: <span id="gyroX">0</span> rad/s</span></p>
-                <p><span class="reading">Y: <span id="gyroY">0</span> rad/s</span></p>
-                <p><span class="reading">Z: <span id="gyroZ">0</span> rad/s</span></p>
-            </article>
-
-            <!-- Acceleration Card -->
-            <article class="card">
-                <h2 class="card-title">Acceleration</h2>
-                <p><span class="reading">X: <span id="accX">0</span> m/s<sup>2</sup></span></p>
-                <p><span class="reading">Y: <span id="accY">0</span> m/s<sup>2</sup></span></p>
-                <p><span class="reading">Z: <span id="accZ">0</span> m/s<sup>2</sup></span></p>
-            </article>
-
-            <!-- Orientation Card -->
-            <article class="card">
-                <h2 class="card-title">Orientation</h2>
-                <p><span class="reading">Roll: <span id="roll">0</span> rad</span></p>
-                <p><span class="reading">Pitch: <span id="pitch">0</span> rad</span></p>
-                <p><span class="reading">Yaw: <span id="yaw">0</span> rad</span></p>
-            </article>
-
-            <!-- Connection Info Card -->
-            <article class="card">
-                <h2 class="card-title">Connection Info</h2>
-                <p>SSID: <span id="ssid">ssid</span></p>
-                <p>IP Address: <span id="ip">ip</span></p>
-                <a href="./disconnect"><button class="disconnect">Disconnect</button></a>
-            </article>
-
-            <!-- Temperature Card -->
-            <article class="card">
-                <h2 class="card-title">Temperature</h2>
-                <p><span class="reading"><span id="temp">0</span>&deg; C</span></p>
-                <a href="./data"><button class="get-data">Get All Data</button></a>
-            </article>
-        </section>
-
-        <!-- 3D Cube Section -->
-        <section class="cube-content">
-            <div id="3Dcube"></div>
-        </section>
-    </main>
-
-    <script src="js/script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
