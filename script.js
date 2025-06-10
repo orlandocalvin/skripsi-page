@@ -1,15 +1,19 @@
 const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt')
-const mqttTopic = "orca/skripsi/esp/remote"
+
+const cmd_topic = "orca/skripsi/cmd"
+const mode_topic = "orca/skripsi/mode"
+
 let lightOn = false
 
 let intervalId = null
-const commandInterval = 15 // ms
+const commandInterval = 100 // ms
 
 let lockedButtonId = null
 let lockedCommandIntervalId = null
 
 client.on('connect', () => {
     console.log("Connected to HiveMQ via MQTT over WebSocket")
+    client.subscribe(mode_topic)
 })
 
 client.on('error', (err) => {
@@ -17,9 +21,18 @@ client.on('error', (err) => {
     client.end()
 })
 
+client.on('message', (topic, message) => {
+    if (topic === mode_topic) {
+        // const mode = message.toString()
+        const isGesture = (message.toString() === "gesture")
+        gestureToggle.checked = isGesture
+        updateGestureUIState(isGesture)
+    }
+})
+
 function sendCommand(state) {
     if (client.connected) {
-        client.publish(mqttTopic, state)
+        client.publish(cmd_topic, state)
         console.log("Sent:", state)
     }
 }
@@ -37,6 +50,8 @@ controlButtons.forEach(({ id, command }) => {
 
     buttonElement.addEventListener("pointerdown", (e) => {
         e.preventDefault()
+        if (gestureToggle.checked) return  // ⛔ Block if in Gesture Mode
+
         const isLockModeActive = lockToggle.checked
 
         if (isLockModeActive) {
@@ -80,7 +95,9 @@ controlButtons.forEach(({ id, command }) => {
 
     const handlePointerUpLeave = (e) => {
         e.preventDefault()
-        if (!lockToggle.checked) { // Only if Lock mode is OFF
+        if (gestureToggle.checked) return  // ⛔ Block if in Gesture Mode
+
+        if (!lockToggle.checked) {
             if (intervalId) {
                 clearInterval(intervalId)
                 intervalId = null
@@ -150,3 +167,23 @@ lockToggle.addEventListener('change', function () {
         sendCommand("S")
     }
 })
+
+function setGestureMode(enabled) {
+    if (client.connected) {
+        const modePayload = enabled ? "gesture" : "manual"
+        client.publish(mode_topic, modePayload, { retain: true })
+        console.log("Set mode to:", modePayload)
+    }
+}
+
+const gestureToggle = document.getElementById("gestureToggle")
+gestureToggle.addEventListener("change", () => {
+    setGestureMode(gestureToggle.checked)
+})
+
+function updateGestureUIState(isGestureMode) {
+    controlButtons.forEach(({ id }) => {
+        const btn = document.getElementById(id)
+        if (btn) btn.disabled = isGestureMode
+    })
+}

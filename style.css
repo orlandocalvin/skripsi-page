@@ -206,7 +206,7 @@ body {
 
 .lock-mechanism {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     align-items: center;
     width: 80%;
     max-width: 190px;
@@ -271,6 +271,11 @@ input:checked+.switch-lever:before {
 
 .lock-mechanism label[for="lockToggle"] {
     cursor: pointer;
+}
+
+#lightIcon svg {
+    display: inline-block;
+    transform: translateY(.4rem);
 }
 
 @media (max-width: 360px) and (orientation: landscape) {
