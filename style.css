@@ -1,30 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
+/* ===== Root Base ===== */
+:root {
+    --primary-color: #3498db;
+    --accent-color: #2ecc71;
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --card-shadow: rgba(140, 140, 140, 0.5);
+}
+
 body {
-    font-family: 'Roboto', sans-serif;
     margin: 0;
-    background-color: #f0f2f5;
-    color: #333;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     width: 100dvw;
     height: 100dvh;
-    position: relative;
     user-select: none;
 }
 
+/* ===== Container ===== */
 .app-container {
-    width: 100dvw;
-    height: 100dvh;
-    background-color: #ffffff;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    user-select: none;
+    height: 100dvh;
+    width: 100dvw;
+    background: #fff;
+    overflow: hidden;
 }
 
+/* ===== Header ===== */
 .app-header {
-    background-color: #3498db;
+    background-color: var(--primary-color);
     color: white;
     padding: 12px 15px;
     display: flex;
@@ -41,7 +48,6 @@ body {
 .header-logo {
     font-size: 2.25em;
     margin-right: 8px;
-    margin-top: -0.25em;
 }
 
 .header-text h1 {
@@ -56,24 +62,23 @@ body {
     opacity: 0.9;
 }
 
-.header-actions span {
-    margin-left: 15px;
-    font-size: 1.2em;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-actions label[for="gestureToggle"] {
     cursor: pointer;
 }
 
-.header-actions .ip-text {
-    font-size: 0.9em;
-    font-weight: bold;
-    vertical-align: middle;
-}
-
+/* ===== Controls Layout ===== */
 .controls-area {
     display: flex;
+    flex-grow: 1;
     padding: 15px;
     gap: 10px;
     background-color: #e9ecef;
-    flex-grow: 1;
     flex-wrap: wrap;
 }
 
@@ -94,6 +99,7 @@ body {
     align-items: center;
     min-width: 150px;
     padding: 10px 5px;
+    justify-content: space-evenly;
 }
 
 .column-right {
@@ -102,6 +108,7 @@ body {
     min-width: 80px;
 }
 
+/* ===== Buttons ===== */
 .control-btn {
     background-color: #d8dcdf;
     border: none;
@@ -112,21 +119,32 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease-out, box-shadow 0.1s ease-out;
     padding: 10px;
     flex-grow: 1;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.1s;
 }
 
 .control-btn:hover {
     background-color: #c8cdd2;
 }
 
-.control-btn:active {
-    background-color: #b8bdc2;
-    transform: scale(0.95);
-    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+.lock-mechanism {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.05em;
+    gap: 10px;
 }
 
+.lock-mechanism label[for="lockToggle"] {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+.control-btn:active,
 .control-btn.btn-locked {
     background-color: #b8bdc2;
     transform: scale(0.95);
@@ -143,34 +161,16 @@ body {
     text-orientation: mixed;
 }
 
-.column-right .control-btn span {
-    transform: rotate(0deg);
+.icon-left,
+.icon-right {
+    rotate: -90deg;
 }
 
-
-.slider-section {
-    width: 100%;
-    text-align: center;
-}
-
-#sliderValueDisplay {
-    font-size: 0.9em;
-    color: #555;
-    margin-bottom: 2px;
-    display: block;
-}
-
-.speed-slider {
-    width: 90%;
-    margin-top: 5px;
-    accent-color: #3498db;
-    cursor: pointer;
-}
-
+/* ===== Icon Buttons (Horn & Light) ===== */
 .icon-buttons-pair {
     display: flex;
-    gap: clamp(10px, 2vw, 20px);
     justify-content: center;
+    gap: clamp(10px, 2vw, 20px);
     width: 100%;
 }
 
@@ -180,17 +180,13 @@ body {
     border-radius: 8px;
     color: #333;
     font-size: clamp(1.5rem, 6vh, 2rem);
-    padding: 0;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease-out, box-shadow 0.1s ease-out;
-
     width: clamp(70px, 15vw, 110px);
-    max-width: 120px;
     aspect-ratio: 1 / 1;
-
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
 }
 
 .icon-btn:hover {
@@ -203,16 +199,7 @@ body {
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.15);
 }
 
-.lock-mechanism {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    width: 80%;
-    max-width: 190px;
-    padding: 10px 0;
-    font-size: 1.05em;
-}
-
+/* ===== Toggle Switch ===== */
 .toggle-switch {
     position: relative;
     display: inline-block;
@@ -229,14 +216,14 @@ body {
 
 .switch-lever {
     position: absolute;
-    cursor: pointer;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background-color: #ccc;
-    transition: .4s;
     border-radius: 24px;
+    cursor: pointer;
+    transition: 0.4s;
 }
 
 .switch-lever:before {
@@ -247,84 +234,93 @@ body {
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: .4s;
     border-radius: 50%;
+    transition: 0.4s;
 }
 
 input:checked+.switch-lever {
-    background-color: #3498db;
+    background-color: var(--primary-color);
+}
+
+.gesture-toggle-switch input:checked+.switch-lever {
+    background-color: var(--accent-color);
 }
 
 input:checked+.switch-lever:before {
     transform: translateX(22px);
 }
 
-.btn-park {
-    width: clamp(120px, 25vw, 200px);
-    flex-grow: 0;
-}
-
-.icon-left,
-.icon-right {
-    rotate: -90deg;
-}
-
-.lock-mechanism label[for="lockToggle"] {
-    cursor: pointer;
-}
-
-#lightIcon svg {
-    display: inline-block;
-    transform: translateY(.4rem);
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-}
-
-.header-actions label[for="gestureToggle"] {
-    cursor: pointer;
-}
-
-.header-actions .toggle-switch {
-    width: 45px;
-    height: 25px;
-}
-
-.header-actions .toggle-switch .switch-lever:before {
-    height: 20px;
-    width: 20px;
-    left: 2px;
-    bottom: 2px;
-}
-
-.header-actions .toggle-switch input:checked+.switch-lever {
-    background-color: #2ecc71;
-}
-
-.header-actions .toggle-switch input:checked+.switch-lever:before {
-    transform: translateX(18px);
-}
-
-.header-actions .switch-lever {
-    width: 90%;
-    height: 90%;
-}
-
+/* ===== Feedback Display ===== */
 .feedback-display {
     width: 95%;
     color: #ecf0f1;
     border-radius: 8px;
-    /* background-color: #34495e; */
-    /* transition: all 0.2s ease-in-out; */
+    text-align: center;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
-
+    font-size: clamp(2em, 6vh, 5em);
+    padding: 0.1em 0;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
+/* ===== Layout Helper Classes ===== */
+.hidden {
+    display: none !important;
+}
+
+.manual-controls-left,
+.manual-controls-right {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 10px;
+}
+
+.manual-controls-left {
+    flex-direction: column;
+}
+
+.manual-controls-right {
+    flex-direction: row;
+}
+
+.gesture-dashboard-left,
+.gesture-dashboard-right {
+    width: 100%;
+    height: 100%;
+}
+
+.gesture-dashboard-right .cube-content {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== Card: Orientation Display ===== */
+.card {
+    background-color: white;
+    box-shadow: 2px 2px 12px 1px var(--card-shadow);
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-title {
+    color: #003366;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin: 5px 0 10px;
+    text-align: center;
+}
+
+.reading {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+/* ===== Responsive ===== */
 @media (orientation: landscape) {
     .header-actions {
         margin-right: 0.3em;
@@ -335,7 +331,8 @@ input:checked+.switch-lever:before {
     }
 
     .feedback-display {
-        font-size: clamp(2em, 35vmin, 6em);
+        font-size: clamp(4em, 10vw, 10em);
+        min-height: 120px;
     }
 }
 
@@ -343,12 +340,9 @@ input:checked+.switch-lever:before {
     .app-container {
         width: 100vh;
         height: 100vw;
-
         position: absolute;
         top: 50%;
         left: 50%;
-
-        /* Rotate 90⁰ for 'portrait' orientation */
         transform: translate(-50%, -50%) rotate(90deg);
     }
 
@@ -363,6 +357,5 @@ input:checked+.switch-lever:before {
     .feedback-display {
         width: 75%;
         font-size: clamp(2em, 18vmin, 6em);
-        padding: 0.1em 0;
     }
 }

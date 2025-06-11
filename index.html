@@ -2,17 +2,18 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <title>ESP8266 WiFi Robot Car</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP8266 RC Car</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
     <div class="app-container">
+        <!-- ===== Header ===== -->
         <header class="app-header">
             <div class="header-title-group">
                 <span class="header-logo">🚘</span>
@@ -22,48 +23,85 @@
                 </div>
             </div>
             <div class="header-actions">
-                <label for="gestureToggle" id="gestureToggleLabel">Gesture Mode</label>
-                <label class="toggle-switch">
+                <label id="gestureToggleLabel" for="gestureToggle">Gesture Mode</label>
+                <label class="toggle-switch gesture-toggle-switch">
                     <input type="checkbox" id="gestureToggle">
                     <span class="switch-lever"></span>
                 </label>
             </div>
         </header>
 
+        <!-- ===== Main Control Area ===== -->
         <main class="controls-area">
+            <!-- === Left Column === -->
             <div class="column column-left">
-                <button id="forwardBtn" class="control-btn btn-up">
-                    <span>⬆️</span>
-                </button>
-                <button id="backwardBtn" class="control-btn btn-down">
-                    <span>⬇️</span>
-                </button>
+                <!-- Manual Mode Controls -->
+                <div class="manual-controls-left">
+                    <button id="forwardBtn" class="control-btn btn-up">
+                        ⬆️
+                    </button>
+                    <button id="backwardBtn" class="control-btn btn-down">
+                        ⬇️
+                    </button>
+                </div>
+
+                <!-- Gesture Mode Orientation -->
+                <div class="gesture-dashboard-left hidden">
+                    <article class="card">
+                        <h2 class="card-title">Orientation</h2>
+                        <p class="reading">Roll: <span id="roll">0</span>°</p>
+                        <p class="reading">Pitch: <span id="pitch">0</span>°</p>
+                        <p class="reading">Yaw: <span id="yaw">0</span>°</p>
+                    </article>
+                </div>
             </div>
+
+            <!-- === Middle Column === -->
             <div class="column column-middle">
-                <div id="feedbackDisplay" class="feedback-display"><!-- kosong? --></div>
+                <!-- Action Feedback -->
+                <div id="feedbackDisplay" class="feedback-display">⬆️</div>
+
+                <!-- Icon Buttons: Horn and Light -->
                 <div class="icon-buttons-pair">
                     <button id="hornBtn" class="icon-btn btn-horn">
-                        <span>📢</span>
+                        📢
                     </button>
                     <button id="lightBtn" class="icon-btn btn-light">
                         <span id="lightIcon">💡</span>
                     </button>
                 </div>
+
+                <!-- Lock Mechanism -->
                 <div class="lock-mechanism">
-                    <label for="lockToggle" id="lockToggleLabel"><!-- kosong? --></label>
+                    <label for="lockToggle" id="lockToggleLabel">
+                        <span class="lock-icon">🔓</span>
+                        <span class="lock-text">Unlocked</span>
+                    </label>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="lockToggle">
+                        <input type="checkbox" id="lockToggle" />
                         <span class="switch-lever"></span>
                     </label>
                 </div>
             </div>
+
+            <!-- === Right Column === -->
             <div class="column column-right">
-                <button id="leftBtn" class="control-btn btn-left">
-                    <span class="icon-left">⬅️</span>
-                </button>
-                <button id="rightBtn" class="control-btn btn-right">
-                    <span class="icon-right">➡️</span>
-                </button>
+                <!-- Manual Mode Controls -->
+                <div class="manual-controls-right">
+                    <button id="leftBtn" class="control-btn btn-left">
+                        <span class="icon-left">⬅️</span>
+                    </button>
+                    <button id="rightBtn" class="control-btn btn-right">
+                        <span class="icon-right">➡️</span>
+                    </button>
+                </div>
+
+                <!-- Gesture Mode 3D Viewer -->
+                <div class="gesture-dashboard-right hidden">
+                    <section class="cube-content">
+                        <div id="3Dcube"></div>
+                    </section>
+                </div>
             </div>
         </main>
     </div>
