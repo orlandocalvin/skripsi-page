@@ -15,16 +15,17 @@
     <div class="app-container">
         <header class="app-header">
             <div class="header-title-group">
-                <span class="header-logo">🤖</span>
+                <span class="header-logo">🚘</span>
                 <div class="header-text">
-                    <h1>ESP8266 WiFi Robot Car</h1>
+                    <h1>ESP8266 RC Car</h1>
                     <p>192.168.4.1</p>
                 </div>
             </div>
             <div class="header-actions">
-                <label>
-                    <input type="checkbox" id="gestureToggle" />
-                    Gesture Mode
+                <label for="gestureToggle" id="gestureToggleLabel">Gesture Mode</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="gestureToggle">
+                    <span class="switch-lever"></span>
                 </label>
             </div>
         </header>
@@ -39,6 +40,7 @@
                 </button>
             </div>
             <div class="column column-middle">
+                <div id="feedbackDisplay" class="feedback-display"><!-- kosong? --></div>
                 <div class="icon-buttons-pair">
                     <button id="hornBtn" class="icon-btn btn-horn">
                         <span>📢</span>
@@ -48,7 +50,7 @@
                     </button>
                 </div>
                 <div class="lock-mechanism">
-                    <label for="lockToggle" id="lockToggleLabel">🔓 Lock</label>
+                    <label for="lockToggle" id="lockToggleLabel"><!-- kosong? --></label>
                     <label class="toggle-switch">
                         <input type="checkbox" id="lockToggle">
                         <span class="switch-lever"></span>

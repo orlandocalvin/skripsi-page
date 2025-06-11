@@ -1,189 +1,218 @@
-const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt')
+// ===== MQTT Configuration =====
+const mqttConfig = {
+    brokerUrl: 'wss://broker.hivemq.com:8884/mqtt',
+    topics: {
+        cmd: "orca/skripsi/cmd",
+        mode: "orca/skripsi/mode"
+    }
+}
 
-const cmd_topic = "orca/skripsi/cmd"
-const mode_topic = "orca/skripsi/mode"
+const client = mqtt.connect(mqttConfig.brokerUrl)
 
-let lightOn = false
-
-let intervalId = null
-const commandInterval = 100 // ms
-
-let lockedButtonId = null
+// ===== State Variables =====
+let isLightOn = false
+let repeatCommandIntervalId = null
 let lockedCommandIntervalId = null
+let lockedButtonId = null
+const commandInterval = 100 // in ms
 
+// ===== UI Elements =====
+const gestureToggle = document.getElementById("gestureToggle")
+const gestureToggleLabel = document.getElementById("gestureToggleLabel")
+const lockToggle = document.getElementById("lockToggle")
+const lockToggleLabel = document.getElementById("lockToggleLabel")
+
+const feedbackDisplay = document.getElementById("feedbackDisplay")
+const lightBtn = document.getElementById("lightBtn")
+const lightIcon = document.getElementById("lightIcon")
+const hornBtn = document.getElementById("hornBtn")
+
+const controlButtons = [
+    { id: "forwardBtn", command: "F", name: "⬆️" },
+    { id: "backwardBtn", command: "B", name: "⬇️" },
+    { id: "leftBtn", command: "L", name: "⬅️" },
+    { id: "rightBtn", command: "R", name: "➡️" }
+]
+
+// ===== MQTT Client Setup =====
 client.on('connect', () => {
-    console.log("Connected to HiveMQ via MQTT over WebSocket")
-    client.subscribe(mode_topic)
+    console.log("✅ Connected to MQTT broker")
+    client.subscribe(mqttConfig.topics.mode)
 })
 
 client.on('error', (err) => {
-    console.error("MQTT connection error:", err)
+    console.error("❌ MQTT connection error:", err)
     client.end()
 })
 
 client.on('message', (topic, message) => {
-    if (topic === mode_topic) {
-        // const mode = message.toString()
-        const isGesture = (message.toString() === "gesture")
-        gestureToggle.checked = isGesture
-        updateGestureUIState(isGesture)
+    if (topic === mqttConfig.topics.mode) {
+        const isGestureMode = message.toString() === "gesture"
+        gestureToggle.checked = isGestureMode
+        updateGestureModeUI(isGestureMode)
+
+        updateGestureToggleLabel()
     }
 })
 
-function sendCommand(state) {
-    if (client.connected) {
-        client.publish(cmd_topic, state)
-        console.log("Sent:", state)
+// ===== Gesture Toggle =====
+gestureToggle.addEventListener("change", () => {
+    updateGestureToggleLabel()
+    const enabled = gestureToggle.checked
+    publishGestureMode(enabled)
+    updateGestureModeUI(enabled)
+})
+
+function publishGestureMode(enabled) {
+    const payload = enabled ? "gesture" : "manual"
+    client.publish(mqttConfig.topics.mode, payload, { retain: true })
+    console.log("🛰️ Mode set to:", payload)
+}
+
+function updateGestureModeUI(isGestureMode) {
+    controlButtons.forEach(({ id }) => {
+        const button = document.getElementById(id)
+        if (button) button.disabled = isGestureMode
+    })
+}
+
+function updateGestureToggleLabel() {
+    const labelText = gestureToggle.checked ? "Gesture Mode" : "Manual Mode"
+    gestureToggleLabel.textContent = labelText
+}
+
+// ===== Control Button Handling =====
+function setupControlButtons() {
+    controlButtons.forEach(({ id, command, name }) => {
+        const button = document.getElementById(id)
+        if (!button) return
+
+        button.addEventListener("pointerdown", (e) => {
+            e.preventDefault()
+            if (gestureToggle.checked) return
+            handleControlPress(button, id, command, name)
+        })
+
+        const handleRelease = (e) => {
+            e.preventDefault()
+            if (gestureToggle.checked) return
+            handleControlRelease()
+        }
+
+        button.addEventListener("pointerup", handleRelease)
+        button.addEventListener("pointerleave", handleRelease)
+    })
+}
+
+function handleControlPress(button, buttonId, command, name) {
+    updateFeedbackDisplay(name)
+    const isLockMode = lockToggle.checked
+
+    if (isLockMode) {
+        if (lockedButtonId === buttonId) {
+            clearInterval(lockedCommandIntervalId)
+            lockedCommandIntervalId = null
+            lockedButtonId = null
+            sendCommand("S")
+            updateFeedbackDisplay("")
+            button.classList.remove("btn-locked")
+        } else {
+            clearInterval(lockedCommandIntervalId)
+            clearInterval(repeatCommandIntervalId)
+            const prevBtn = document.getElementById(lockedButtonId)
+            if (prevBtn) prevBtn.classList.remove("btn-locked")
+            if (lockedButtonId && lockedButtonId !== buttonId) sendCommand("S")
+
+            sendCommand(command)
+            lockedCommandIntervalId = setInterval(() => sendCommand(command), commandInterval)
+            lockedButtonId = buttonId
+            button.classList.add("btn-locked")
+
+            controlButtons.forEach(btn => {
+                if (btn.id !== buttonId) {
+                    document.getElementById(btn.id)?.classList.remove("btn-locked")
+                }
+            })
+        }
+    } else {
+        clearInterval(repeatCommandIntervalId)
+        sendCommand(command)
+        repeatCommandIntervalId = setInterval(() => sendCommand(command), commandInterval)
     }
 }
 
-const controlButtons = [
-    { id: "forwardBtn", command: "F" },
-    { id: "backwardBtn", command: "B" },
-    { id: "leftBtn", command: "L" },
-    { id: "rightBtn", command: "R" }
-]
+function handleControlRelease() {
+    if (!lockToggle.checked) {
+        clearInterval(repeatCommandIntervalId)
+        repeatCommandIntervalId = null
+        sendCommand("S")
+        updateFeedbackDisplay("")
+    }
+}
 
-controlButtons.forEach(({ id, command }) => {
-    const buttonElement = document.getElementById(id)
-    if (!buttonElement) return
-
-    buttonElement.addEventListener("pointerdown", (e) => {
-        e.preventDefault()
-        if (gestureToggle.checked) return  // ⛔ Block if in Gesture Mode
-
-        const isLockModeActive = lockToggle.checked
-
-        if (isLockModeActive) {
-            if (lockedButtonId === id) {
-                if (lockedCommandIntervalId) clearInterval(lockedCommandIntervalId)
-                lockedCommandIntervalId = null
-                lockedButtonId = null
-                sendCommand("S")
-                buttonElement.classList.remove("btn-locked")
-            } else {
-                if (lockedCommandIntervalId) {
-                    clearInterval(lockedCommandIntervalId)
-                    const previousLockedButton = document.getElementById(lockedButtonId)
-                    if (previousLockedButton) previousLockedButton.classList.remove("btn-locked")
-                    if (lockedButtonId && lockedButtonId !== id) {
-                        sendCommand("S")
-                    }
-                }
-
-                if (intervalId) {
-                    clearInterval(intervalId)
-                    intervalId = null
-                }
-
-                sendCommand(command)
-                lockedCommandIntervalId = setInterval(() => sendCommand(command), commandInterval)
-                lockedButtonId = id
-                buttonElement.classList.add("btn-locked")
-
-                // Make sure other buttons do not have the btn-locked
-                controlButtons.forEach(btn => {
-                    if (btn.id !== id) document.getElementById(btn.id)?.classList.remove("btn-locked")
-                })
-            }
-        } else { // Mode Lock OFF
-            if (intervalId) clearInterval(intervalId)
-            sendCommand(command)
-            intervalId = setInterval(() => sendCommand(command), commandInterval)
+// ===== Feedback Display =====
+function updateFeedbackDisplay(icon) {
+    if (feedbackDisplay) {
+        if (feedbackDisplay.textContent == '') {
+            feedbackDisplay.textContent = '🔄️' // Placeholder Icon
         }
-    })
 
-    const handlePointerUpLeave = (e) => {
-        e.preventDefault()
-        if (gestureToggle.checked) return  // ⛔ Block if in Gesture Mode
-
-        if (!lockToggle.checked) {
-            if (intervalId) {
-                clearInterval(intervalId)
-                intervalId = null
-            }
-            sendCommand("S")
+        if (icon) {
+            feedbackDisplay.textContent = icon
+            feedbackDisplay.style.color = '#ecf0f1'
+        } else {
+            feedbackDisplay.style.color = 'transparent';
         }
     }
+}
 
-    buttonElement.addEventListener("pointerup", handlePointerUpLeave)
-    buttonElement.addEventListener("pointerleave", handlePointerUpLeave)
-})
+// ===== Horn and Light =====
+hornBtn.addEventListener("click", () => sendCommand("V"))
 
-const lightBtn = document.getElementById("lightBtn")
-const lightIcon = document.getElementById("lightIcon")
-const light_bulb_off = /* html*/ `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
-                                class="bi bi-lightbulb-off" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd"
-                                    d="M2.23 4.35A6 6 0 0 0 2 6c0 1.691.7 3.22 1.826 4.31.203.196.359.4.453.619l.762 1.769A.5.5 0 0 0 5.5 13a.5.5 0 0 0 0 1 .5.5 0 0 0 0 1l.224.447a1 1 0 0 0 .894.553h2.764a1 1 0 0 0 .894-.553L10.5 15a.5.5 0 0 0 0-1 .5.5 0 0 0 0-1 .5.5 0 0 0 .288-.091L9.878 12H5.83l-.632-1.467a3 3 0 0 0-.676-.941 4.98 4.98 0 0 1-1.455-4.405zm1.588-2.653.708.707a5 5 0 0 1 7.07 7.07l.707.707a6 6 0 0 0-8.484-8.484zm-2.172-.051a.5.5 0 0 1 .708 0l12 12a.5.5 0 0 1-.708.708l-12-12a.5.5 0 0 1 0-.708" />
-                            </svg>`
+const lightOffSVG = /* html*/ `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+    class="bi bi-lightbulb-off" viewBox="0 0 16 16">
+    <path fill-rule="evenodd"
+        d="M2.23 4.35A6 6 0 0 0 2 6c0 1.691.7 3.22 1.826 4.31.203.196.359.4.453.619l.762 1.769A.5.5 0 0 0 5.5 13a.5.5 0 0 0 0 1 .5.5 0 0 0 0 1l.224.447a1 1 0 0 0 .894.553h2.764a1 1 0 0 0 .894-.553L10.5 15a.5.5 0 0 0 0-1 .5.5 0 0 0 0-1 .5.5 0 0 0 .288-.091L9.878 12H5.83l-.632-1.467a3 3 0 0 0-.676-.941 4.98 4.98 0 0 1-1.455-4.405zm1.588-2.653.708.707a5 5 0 0 1 7.07 7.07l.707.707a6 6 0 0 0-8.484-8.484zm-2.172-.051a.5.5 0 0 1 .708 0l12 12a.5.5 0 0 1-.708.708l-12-12a.5.5 0 0 1 0-.708" />
+</svg>`
 
 lightBtn.addEventListener("click", () => {
-    lightOn = !lightOn
-    sendCommand(lightOn ? "W" : "w")
-
-    if (lightOn) {
-        lightIcon.innerHTML = light_bulb_off
-    } else {
-        lightIcon.innerHTML = "💡"
-    }
+    isLightOn = !isLightOn
+    sendCommand(isLightOn ? "W" : "w")
+    lightIcon.innerHTML = isLightOn ? lightOffSVG : "💡"
 })
 
-const hornBtn = document.getElementById("hornBtn")
-hornBtn.addEventListener("click", () => {
-    sendCommand("V")
+// ===== Lock Toggle Handling =====
+lockToggle.addEventListener("change", () => {
+    updateLockUI()
+
+    clearInterval(lockedCommandIntervalId)
+    lockedCommandIntervalId = null
+
+    clearInterval(repeatCommandIntervalId)
+    repeatCommandIntervalId = null
+
+    const lockedBtnElem = document.getElementById(lockedButtonId)
+    if (lockedBtnElem) lockedBtnElem.classList.remove("btn-locked")
+
+    lockedButtonId = null
+    sendCommand("S")
+    updateFeedbackDisplay("")
 })
 
-const lockToggle = document.getElementById('lockToggle')
-const lockToggleLabel = document.getElementById('lockToggleLabel')
-
-function updateLockStatusText() {
-    if (lockToggle.checked) {
-        lockToggleLabel.textContent = "🔒 Unlock"
-    } else {
-        lockToggleLabel.textContent = "🔓 Lock"
-    }
+function updateLockUI() {
+    lockToggleLabel.textContent = lockToggle.checked ? "Locked" : "Unlocked"
 }
 
-lockToggle.addEventListener('change', function () {
-    updateLockStatusText()
-
-    // Stop locked command
-    if (lockedCommandIntervalId) {
-        clearInterval(lockedCommandIntervalId)
-        lockedCommandIntervalId = null
-        const currentLockedButtonElem = document.getElementById(lockedButtonId)
-        if (currentLockedButtonElem) {
-            currentLockedButtonElem.classList.remove("btn-locked")
-        }
-        lockedButtonId = null
-        sendCommand("S")
-    }
-
-    // Stop non-locked command
-    if (intervalId) {
-        clearInterval(intervalId)
-        intervalId = null
-        sendCommand("S")
-    }
-})
-
-function setGestureMode(enabled) {
+// ===== Command Sender =====
+function sendCommand(char) {
     if (client.connected) {
-        const modePayload = enabled ? "gesture" : "manual"
-        client.publish(mode_topic, modePayload, { retain: true })
-        console.log("Set mode to:", modePayload)
+        client.publish(mqttConfig.topics.cmd, char)
+        console.log("📤 Sent:", char)
     }
 }
 
-const gestureToggle = document.getElementById("gestureToggle")
-gestureToggle.addEventListener("change", () => {
-    setGestureMode(gestureToggle.checked)
-})
-
-function updateGestureUIState(isGestureMode) {
-    controlButtons.forEach(({ id }) => {
-        const btn = document.getElementById(id)
-        if (btn) btn.disabled = isGestureMode
-    })
-}
+// ===== Initialization =====
+updateFeedbackDisplay("")
+setupControlButtons()
+updateLockUI()
+updateGestureToggleLabel()
