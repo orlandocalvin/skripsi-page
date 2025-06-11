@@ -64,12 +64,21 @@ body {
 
 .header-actions {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 10px;
+    max-width: 100%;
+    overflow: hidden;
+    flex-shrink: 1;
 }
 
 .header-actions label[for="gestureToggle"] {
     cursor: pointer;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    /* font-size: 0.9em; */
 }
 
 /* ===== Controls Layout ===== */
@@ -322,6 +331,10 @@ input:checked+.switch-lever:before {
 
 /* ===== Responsive ===== */
 @media (orientation: landscape) {
+    .header-logo {
+        margin-top: -0.25em;
+    }
+
     .header-actions {
         margin-right: 0.3em;
     }
@@ -344,6 +357,8 @@ input:checked+.switch-lever:before {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) rotate(90deg);
+        overflow: hidden;
+        max-width: 100dvh;
     }
 
     .header-actions {
