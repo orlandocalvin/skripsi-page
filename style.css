@@ -64,21 +64,12 @@ body {
 
 .header-actions {
     display: flex;
-    flex-direction: row;
     align-items: center;
     gap: 10px;
-    max-width: 100%;
-    overflow: hidden;
-    flex-shrink: 1;
 }
 
 .header-actions label[for="gestureToggle"] {
     cursor: pointer;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    /* font-size: 0.9em; */
 }
 
 /* ===== Controls Layout ===== */
@@ -350,15 +341,17 @@ input:checked+.switch-lever:before {
 }
 
 @media (orientation: portrait) {
+    body {
+        overflow: hidden;
+    }
+
     .app-container {
-        width: 100vh;
-        height: 100vw;
+        width: 100dvh;
+        height: 100dvw;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) rotate(90deg);
-        overflow: hidden;
-        max-width: 100dvh;
     }
 
     .header-actions {

@@ -12,7 +12,8 @@ const client = mqtt.connect(mqttConfig.brokerUrl)
 
 // ===== Constants =====
 const COMMAND_INTERVAL = 100 // ms
-const ICON_LIGHT_OFF = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+const ICON_LIGHT_ON = "💡"
+const ICON_LIGHT_OFF = /* html */ `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
     class="bi bi-lightbulb-off" viewBox="0 0 16 16"><path fill-rule="evenodd"
     d="M2.23 4.35A6 6 0 0 0 2 6c0 1.691.7 3.22 1.826 4.31.203.196.359.4.453.619l.762 1.769A.5.5 0 0 0 5.5 13a.5.5 0 0 0 0 1 
     .5.5 0 0 0 0 1l.224.447a1 1 0 0 0 .894.553h2.764a1 1 0 0 0 .894-.553L10.5 15a.5.5 0 0 0 0-1 
@@ -20,7 +21,6 @@ const ICON_LIGHT_OFF = `<svg xmlns="http://www.w3.org/2000/svg" width="32" heigh
     4.98 4.98 0 0 1-1.455-4.405zm1.588-2.653.708.707a5 5 0 0 1 7.07 7.07l.707.707a6 6 0 0 
     0-8.484-8.484zm-2.172-.051a.5.5 0 0 1 .708 0l12 12a.5.5 0 0 1-.708.708l-12-12a.5.5 0 0 1 0-.708"/>
 </svg>`
-const ICON_LIGHT_ON = "💡"
 
 // ===== State Variables =====
 let isLightOn = false
@@ -54,7 +54,6 @@ const controlButtons = [
 ]
 
 // ======= UI Setup Functions =======
-
 function updateGestureModeUI(isGestureMode) {
     manualControlsLeft.classList.toggle('hidden', isGestureMode)
     gestureDashboardLeft.classList.toggle('hidden', !isGestureMode)
@@ -106,7 +105,6 @@ function stopAllCommands() {
 }
 
 // ======= Control Button Setup =======
-
 function setupControlButtons() {
     controlButtons.forEach(({ id, command, name }) => {
         const button = document.getElementById(id)
@@ -156,7 +154,6 @@ function handleControlRelease() {
 }
 
 // ======= Gesture & Lock Toggle =======
-
 gestureToggle.addEventListener("change", () => {
     const enabled = gestureToggle.checked
     updateGestureToggleLabel()
@@ -170,7 +167,6 @@ lockToggle.addEventListener("change", () => {
 })
 
 // ======= Light & Horn Button =======
-
 lightBtn.addEventListener("click", () => {
     isLightOn = !isLightOn
     sendCommand(isLightOn ? "W" : "w")
@@ -180,7 +176,6 @@ lightBtn.addEventListener("click", () => {
 hornBtn.addEventListener("click", () => sendCommand("V"))
 
 // ======= MQTT Setup =======
-
 function initMQTT() {
     client.on('connect', () => {
         console.log("✅ MQTT Connected")
@@ -205,7 +200,7 @@ function initMQTT() {
                     cube.rotation.x = (data.pitch || 0) * Math.PI / 180
                     cube.rotation.y = (data.yaw || 0) * Math.PI / 180
                     cube.rotation.z = (data.roll || 0) * Math.PI / 180
-                    tampilData(data)
+                    updateOrientationDisplay(data)
                 }
             } catch (err) {
                 console.error("❌ JSON Parse Error:", err)
@@ -228,7 +223,6 @@ function sendCommand(char) {
 }
 
 // ======= 3D Visualization (Three.js) =======
-
 function init3DScene() {
     console.log("🌐 Initializing 3D Scene")
     if (!object3D) return
@@ -268,7 +262,7 @@ function init3DScene() {
     handleResize()
 }
 
-function tampilData(data) {
+function updateOrientationDisplay(data) {
     const rollEl = document.getElementById("roll")
     const pitchEl = document.getElementById("pitch")
     const yawEl = document.getElementById("yaw")
@@ -290,9 +284,11 @@ function handleResize() {
 
 window.addEventListener('resize', handleResize)
 
-// ======= Inisialisasi =======
-setupControlButtons()
-initMQTT()
-updateLockUI()
-updateGestureToggleLabel()
-updateFeedbackDisplay("")
+// ======= Initialization =======
+document.addEventListener('DOMContentLoaded', () => {
+    setupControlButtons()
+    initMQTT()
+    updateLockUI()
+    updateGestureToggleLabel()
+    updateFeedbackDisplay("")
+})
