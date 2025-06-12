@@ -8,7 +8,6 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
@@ -51,7 +50,6 @@
                         <h2 class="card-title">Orientation</h2>
                         <p class="reading">Roll: <span id="roll">0</span>°</p>
                         <p class="reading">Pitch: <span id="pitch">0</span>°</p>
-                        <p class="reading">Yaw: <span id="yaw">0</span>°</p>
                     </article>
                 </div>
             </div>
@@ -96,11 +94,41 @@
                     </button>
                 </div>
 
-                <!-- Gesture Mode 3D Viewer -->
+                <!-- Gesture Mode 2D Orientation Pad -->
                 <div class="gesture-dashboard-right hidden">
-                    <section class="cube-content">
-                        <div id="3Dcube"></div>
-                    </section>
+                    <div class="orientation-pad">
+                        <svg class="pad-background-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <style>
+                                .line {
+                                    stroke: rgba(44, 62, 80, 0.4);
+                                    stroke-width: 0.5;
+                                    stroke-dasharray: 2 2;
+                                }
+
+                                .icon {
+                                    font-size: 10px;
+                                    fill: rgba(44, 62, 80, 0.6);
+                                    font-family: sans-serif;
+                                    text-anchor: middle;
+                                    dominant-baseline: middle;
+                                }
+                            </style>
+
+                            <line class="line" x1="35" y1="30" x2="0" y2="0" />
+                            <line class="line" x1="65" y1="30" x2="100" y2="0" />
+                            <line class="line" x1="35" y1="70" x2="0" y2="100" />
+                            <line class="line" x1="65" y1="70" x2="100" y2="100" />
+
+                            <rect class="line" x="35" y="30" width="30" height="40" fill="none" />
+
+                            <text class="icon" x="50" y="15">⬆️</text>
+                            <text class="icon" x="50" y="85">⬇️</text>
+                            <text class="icon" x="17.5" y="50">⬅️</text>
+                            <text class="icon" x="82.5" y="50">➡️</text>
+                        </svg>
+
+                        <div id="pad-indicator"></div>
+                    </div>
                 </div>
             </div>
         </main>

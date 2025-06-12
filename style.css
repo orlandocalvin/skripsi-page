@@ -89,7 +89,6 @@ body {
 
 .column-left {
     flex: 1;
-    flex-direction: column;
     min-width: 80px;
 }
 
@@ -99,12 +98,10 @@ body {
     align-items: center;
     min-width: 150px;
     padding: 10px 5px;
-    justify-content: space-evenly;
 }
 
 .column-right {
     flex: 1.5;
-    flex-direction: row;
     min-width: 80px;
 }
 
@@ -270,9 +267,15 @@ input:checked+.switch-lever:before {
 }
 
 .manual-controls-left,
-.manual-controls-right {
+.manual-controls-right,
+.gesture-dashboard-left,
+.gesture-dashboard-right {
     width: 100%;
     height: 100%;
+}
+
+.manual-controls-left,
+.manual-controls-right {
     display: flex;
     gap: 10px;
 }
@@ -285,15 +288,10 @@ input:checked+.switch-lever:before {
     flex-direction: row;
 }
 
-.gesture-dashboard-left,
 .gesture-dashboard-right {
-    width: 100%;
-    height: 100%;
-}
-
-.gesture-dashboard-right .cube-content {
-    width: 100%;
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* ===== Card: Orientation Display ===== */
@@ -318,6 +316,45 @@ input:checked+.switch-lever:before {
     font-size: 1rem;
     text-align: center;
     margin-bottom: 5px;
+}
+
+/* ===== 2D Orientation Pad Styles ===== */
+.orientation-pad {
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+
+    background-color: #d8dcdf;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pad-background-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+}
+
+#pad-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transform: translate(-50%, -50%);
+    transition: background-color 0.3s;
+
+    z-index: 2;
 }
 
 /* ===== Responsive ===== */

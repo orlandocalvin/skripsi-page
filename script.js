@@ -22,19 +22,25 @@ const ICON_LIGHT_OFF = /* html */ `<svg xmlns="http://www.w3.org/2000/svg" width
     0-8.484-8.484zm-2.172-.051a.5.5 0 0 1 .708 0l12 12a.5.5 0 0 1-.708.708l-12-12a.5.5 0 0 1 0-.708"/>
 </svg>`
 
+const controlButtons = [
+    { id: "forwardBtn", command: "F", icon: "⬆️" },
+    { id: "backwardBtn", command: "B", icon: "⬇️" },
+    { id: "leftBtn", command: "L", icon: "⬅️" },
+    { id: "rightBtn", command: "R", icon: "➡️" }
+]
+
 // ===== State Variables =====
 let isLightOn = false
-let is3DSceneInitialized = false
 let repeatCommandIntervalId = null
 let lockedCommandIntervalId = null
 let lockedButtonId = null
-let scene, camera, renderer, cube
 
 // ===== UI Elements =====
 const gestureToggle = document.getElementById("gestureToggle")
 const gestureToggleLabel = document.getElementById("gestureToggleLabel")
 const lockToggle = document.getElementById("lockToggle")
 const lockToggleLabel = document.getElementById("lockToggleLabel")
+
 const feedbackDisplay = document.getElementById("feedbackDisplay")
 const lightBtn = document.getElementById("lightBtn")
 const lightIcon = document.getElementById("lightIcon")
@@ -44,14 +50,8 @@ const manualControlsLeft = document.querySelector('.manual-controls-left')
 const gestureDashboardLeft = document.querySelector('.gesture-dashboard-left')
 const manualControlsRight = document.querySelector('.manual-controls-right')
 const gestureDashboardRight = document.querySelector('.gesture-dashboard-right')
-const object3D = document.getElementById('3Dcube')
 
-const controlButtons = [
-    { id: "forwardBtn", command: "F", name: "⬆️" },
-    { id: "backwardBtn", command: "B", name: "⬇️" },
-    { id: "leftBtn", command: "L", name: "⬅️" },
-    { id: "rightBtn", command: "R", name: "➡️" }
-]
+const padIndicator = document.getElementById('pad-indicator') // 2D Pad Elements
 
 // ======= UI Setup Functions =======
 function updateGestureModeUI(isGestureMode) {
@@ -59,15 +59,6 @@ function updateGestureModeUI(isGestureMode) {
     gestureDashboardLeft.classList.toggle('hidden', !isGestureMode)
     manualControlsRight.classList.toggle('hidden', isGestureMode)
     gestureDashboardRight.classList.toggle('hidden', !isGestureMode)
-
-    if (isGestureMode) {
-        if (!is3DSceneInitialized) {
-            init3DScene()
-            is3DSceneInitialized = true
-        } else {
-            handleResize()
-        }
-    }
 }
 
 function updateGestureToggleLabel() {
@@ -85,7 +76,7 @@ function updateLockUI() {
 
 function updateFeedbackDisplay(icon) {
     if (!feedbackDisplay) return
-    feedbackDisplay.textContent = icon || "⬆️"
+    feedbackDisplay.textContent = icon || "🔄️"
     feedbackDisplay.style.color = icon ? "#ecf0f1" : "transparent"
 }
 
@@ -106,14 +97,14 @@ function stopAllCommands() {
 
 // ======= Control Button Setup =======
 function setupControlButtons() {
-    controlButtons.forEach(({ id, command, name }) => {
+    controlButtons.forEach(({ id, command, icon }) => {
         const button = document.getElementById(id)
         if (!button) return
 
         button.addEventListener("pointerdown", (e) => {
             e.preventDefault()
             if (gestureToggle.checked) return
-            handleControlPress(button, id, command, name)
+            handleControlPress(button, id, command, icon)
         })
 
         const releaseHandler = (e) => {
@@ -127,7 +118,7 @@ function setupControlButtons() {
     })
 }
 
-function handleControlPress(button, buttonId, command, name) {
+function handleControlPress(button, buttonId, command, icon) {
     const isLockMode = lockToggle.checked
 
     if (isLockMode) {
@@ -146,7 +137,7 @@ function handleControlPress(button, buttonId, command, name) {
         repeatCommandIntervalId = setInterval(() => sendCommand(command), COMMAND_INTERVAL)
     }
 
-    updateFeedbackDisplay(name)
+    updateFeedbackDisplay(icon)
 }
 
 function handleControlRelease() {
@@ -178,33 +169,42 @@ hornBtn.addEventListener("click", () => sendCommand("V"))
 // ======= MQTT Setup =======
 function initMQTT() {
     client.on('connect', () => {
-        console.log("✅ MQTT Connected")
-        client.subscribe([mqttConfig.topics.mode, mqttConfig.topics.web])
+        console.log("MQTT Connected")
+        client.subscribe([mqttConfig.topics.mode, mqttConfig.topics.web, mqttConfig.topics.cmd])
     })
 
     client.on('error', (err) => {
-        console.error("❌ MQTT Error:", err)
+        console.error("MQTT Error:", err)
         client.end()
     })
 
     client.on('message', (topic, message) => {
-        if (topic === mqttConfig.topics.mode) {
-            const isGestureMode = message.toString() === "gesture"
+        const payload = message.toString()
+
+        if (topic === mqttConfig.topics.mode) { // Mode Topic Handling
+            const isGestureMode = payload === "gesture"
             gestureToggle.checked = isGestureMode
             updateGestureModeUI(isGestureMode)
             updateGestureToggleLabel()
-        } else if (topic === mqttConfig.topics.web) {
+
+        } else if (topic === mqttConfig.topics.web) { // Web Topic Handling
             try {
-                const data = JSON.parse(message)
-                if (is3DSceneInitialized) {
-                    cube.rotation.x = (data.pitch || 0) * Math.PI / 180
-                    cube.rotation.y = (data.yaw || 0) * Math.PI / 180
-                    cube.rotation.z = (data.roll || 0) * Math.PI / 180
-                    updateOrientationDisplay(data)
-                }
+                const data = JSON.parse(payload)
+                update2DPad(data.roll, data.pitch)
+                updateOrientationDisplay(data)
             } catch (err) {
-                console.error("❌ JSON Parse Error:", err)
+                console.error("JSON Parse Error:", err)
             }
+
+        } else if (topic === mqttConfig.topics.cmd) { // Command Topic Handling
+            let icon = "" // Default icon
+            switch (payload) {
+                case 'F': icon = '⬆️'; break;
+                case 'B': icon = '⬇️'; break;
+                case 'L': icon = '⬅️'; break;
+                case 'R': icon = '➡️'; break;
+            }
+            updateFeedbackDisplay(icon)
         }
     })
 }
@@ -212,77 +212,39 @@ function initMQTT() {
 function publishGestureMode(enabled) {
     const payload = enabled ? "gesture" : "manual"
     client.publish(mqttConfig.topics.mode, payload, { retain: true })
-    console.log("📡 Mode:", payload)
+    console.log("Mode:", payload)
 }
 
 function sendCommand(char) {
     if (client.connected) {
         client.publish(mqttConfig.topics.cmd, char)
-        console.log("📤 Command:", char)
+        console.log("Command:", char)
     }
-}
-
-// ======= 3D Visualization (Three.js) =======
-function init3DScene() {
-    console.log("🌐 Initializing 3D Scene")
-    if (!object3D) return
-
-    const parent = object3D.parentElement
-    const width = parent.clientWidth
-    const height = parent.clientHeight
-
-    scene = new THREE.Scene()
-    scene.background = new THREE.Color(0xeeeeee)
-    camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
-    camera.position.z = 5
-
-    renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setSize(width, height)
-    object3D.appendChild(renderer.domElement)
-
-    const geometry = new THREE.BoxGeometry(4, 1, 5)
-    const material = [
-        new THREE.MeshBasicMaterial({ color: 0xffff00 }),
-        new THREE.MeshBasicMaterial({ color: 0xffff00 }),
-        new THREE.MeshBasicMaterial({ color: 0x800080 }),
-        new THREE.MeshBasicMaterial({ color: 0x800080 }),
-        new THREE.MeshBasicMaterial({ color: 0x00ffff }),
-        new THREE.MeshBasicMaterial({ color: 0x00ffff })
-    ]
-
-    cube = new THREE.Mesh(geometry, material)
-    scene.add(cube)
-
-    function animate() {
-        requestAnimationFrame(animate)
-        renderer.render(scene, camera)
-    }
-
-    animate()
-    handleResize()
 }
 
 function updateOrientationDisplay(data) {
     const rollEl = document.getElementById("roll")
     const pitchEl = document.getElementById("pitch")
-    const yawEl = document.getElementById("yaw")
 
     if (rollEl) rollEl.textContent = data.roll.toFixed(1)
     if (pitchEl) pitchEl.textContent = data.pitch.toFixed(1)
-    if (yawEl) yawEl.textContent = data.yaw.toFixed(1)
 }
 
-function handleResize() {
-    if (!object3D || !camera || !renderer) return
-    const parent = object3D.parentElement
-    const width = parent.clientWidth
-    const height = parent.clientHeight
-    camera.aspect = width / height
-    camera.updateProjectionMatrix()
-    renderer.setSize(width, height)
-}
+function update2DPad(roll, pitch) {
+    if (!padIndicator) return // Make sure the element exists
 
-window.addEventListener('resize', handleResize)
+    // Roll & pitch value limits
+    const clampedRoll = Math.max(-90, Math.min(90, roll))
+    const clampedPitch = Math.max(-90, Math.min(90, pitch))
+
+    // Mapping roll & pitch
+    const xPos = 50 - (clampedRoll / 90) * 50
+    const yPos = 50 + (clampedPitch / 90) * 50
+
+    // Apply position
+    padIndicator.style.left = `${xPos}%`
+    padIndicator.style.top = `${yPos}%`
+}
 
 // ======= Initialization =======
 document.addEventListener('DOMContentLoaded', () => {
