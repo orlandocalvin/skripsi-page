@@ -34,6 +34,8 @@ let isLightOn = false
 let repeatCommandIntervalId = null
 let lockedCommandIntervalId = null
 let lockedButtonId = null
+let rollGauge, pitchGauge
+let areGaugesInitialized = false
 
 // ===== UI Elements =====
 const gestureToggle = document.getElementById("gestureToggle")
@@ -51,14 +53,29 @@ const gestureDashboardLeft = document.querySelector('.gesture-dashboard-left')
 const manualControlsRight = document.querySelector('.manual-controls-right')
 const gestureDashboardRight = document.querySelector('.gesture-dashboard-right')
 
-const padIndicator = document.getElementById('pad-indicator') // 2D Pad Elements
+// 2D Pad Elements
+const padIndicator = document.getElementById('pad-indicator')
+const iconUp = document.getElementById('icon-up')
+const iconDown = document.getElementById('icon-down')
+const iconLeft = document.getElementById('icon-left')
+const iconRight = document.getElementById('icon-right')
 
 // ======= UI Setup Functions =======
 function updateGestureModeUI(isGestureMode) {
+    const controlsArea = document.querySelector('.controls-area')
+    controlsArea.classList.toggle('gesture-mode-active', isGestureMode)
+
     manualControlsLeft.classList.toggle('hidden', isGestureMode)
     gestureDashboardLeft.classList.toggle('hidden', !isGestureMode)
     manualControlsRight.classList.toggle('hidden', isGestureMode)
     gestureDashboardRight.classList.toggle('hidden', !isGestureMode)
+
+    if (isGestureMode && !areGaugesInitialized) {
+        setTimeout(() => {
+            initGauges()
+            areGaugesInitialized = true
+        }, 0) // wait for DOMContentLoaded
+    }
 }
 
 function updateGestureToggleLabel() {
@@ -192,19 +209,26 @@ function initMQTT() {
                 const data = JSON.parse(payload)
                 update2DPad(data.roll, data.pitch)
                 updateOrientationDisplay(data)
+
+                // Update gauges
+                if (rollGauge) rollGauge.set(data.roll)
+                if (pitchGauge) pitchGauge.set(data.pitch)
+
             } catch (err) {
                 console.error("JSON Parse Error:", err)
             }
 
         } else if (topic === mqttConfig.topics.cmd) { // Command Topic Handling
-            let icon = "" // Default icon
-            switch (payload) {
-                case 'F': icon = '⬆️'; break;
-                case 'B': icon = '⬇️'; break;
-                case 'L': icon = '⬅️'; break;
-                case 'R': icon = '➡️'; break;
+            if (gestureToggle.checked) {
+                let icon = "" // Default icon
+                switch (payload) {
+                    case 'F': icon = '⬆️'; break;
+                    case 'B': icon = '⬇️'; break;
+                    case 'L': icon = '⬅️'; break;
+                    case 'R': icon = '➡️'; break;
+                }
+                updateFeedbackDisplay(icon)
             }
-            updateFeedbackDisplay(icon)
         }
     })
 }
@@ -233,6 +257,11 @@ function updateOrientationDisplay(data) {
 function update2DPad(roll, pitch) {
     if (!padIndicator) return // Make sure the element exists
 
+    // Visual feedback
+    const isActive = Math.abs(roll) > 30 || Math.abs(pitch) > 30
+    padIndicator.classList.toggle('indicator-active', isActive)
+    updateIconHighlight(roll, pitch)
+
     // Roll & pitch value limits
     const clampedRoll = Math.max(-90, Math.min(90, roll))
     const clampedPitch = Math.max(-90, Math.min(90, pitch))
@@ -244,6 +273,60 @@ function update2DPad(roll, pitch) {
     // Apply position
     padIndicator.style.left = `${xPos}%`
     padIndicator.style.top = `${yPos}%`
+}
+
+function updateIconHighlight(roll, pitch) {
+    const icons = [iconUp, iconDown, iconLeft, iconRight]
+    icons.forEach(icon => icon?.classList.remove('icon-active'))
+
+    // Activate icons
+    if (pitch < -30 && pitch > -90) {
+        iconUp?.classList.add('icon-active')
+    } else if (pitch > 30 && pitch < 90) {
+        iconDown?.classList.add('icon-active')
+    } else if (roll > 30 && roll < 90) {
+        iconLeft?.classList.add('icon-active')
+    } else if (roll < -30 && roll > -90) {
+        iconRight?.classList.add('icon-active')
+    }
+}
+
+function initGauges() {
+    const gaugeOptions = {
+        angle: -0.25,       // Sudut lengkungan gauge
+        lineWidth: 0.2,     // Ketebalan garis
+        radiusScale: 0.9,   // Seberapa besar radius relatif terhadap wadah
+        pointer: {
+            length: 0.5,    // Panjang jarum
+            strokeWidth: 0.03, // Ketebalan jarum
+            color: '#333333'
+        },
+        limitMax: true,     // Batasi nilai maks/min
+        limitMin: true,
+        colorStart: '#3498db', // Warna gradien awal (biru)
+        colorStop: '#3498db',
+        strokeColor: '#E0E0E0',
+        generateGradient: false,
+        highDpiSupport: true,
+    };
+
+    // Inisialisasi Roll Gauge
+    const rollGaugeEl = document.getElementById('roll-gauge');
+    if (rollGaugeEl) {
+        rollGauge = new Gauge(rollGaugeEl).setOptions(gaugeOptions);
+        rollGauge.maxValue = 90;
+        rollGauge.setMinValue(-90);
+        rollGauge.set(0);
+    }
+
+    // Inisialisasi Pitch Gauge
+    const pitchGaugeEl = document.getElementById('pitch-gauge');
+    if (pitchGaugeEl) {
+        pitchGauge = new Gauge(pitchGaugeEl).setOptions(gaugeOptions);
+        pitchGauge.maxValue = 90;
+        pitchGauge.setMinValue(-90);
+        pitchGauge.set(0);
+    }
 }
 
 // ======= Initialization =======

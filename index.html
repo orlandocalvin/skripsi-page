@@ -8,6 +8,7 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.7/gauge.min.js"></script>
 </head>
 
 <body>
@@ -46,10 +47,24 @@
 
                 <!-- Gesture Mode Orientation -->
                 <div class="gesture-dashboard-left hidden">
-                    <article class="card">
+                    <article class="card card-orientation">
                         <h2 class="card-title">Orientation</h2>
                         <p class="reading">Roll: <span id="roll">0</span>°</p>
                         <p class="reading">Pitch: <span id="pitch">0</span>°</p>
+                    </article>
+
+                    <article class="card card-gauges">
+                        <h2 class="card-title">Gauges</h2>
+                        <div class="gauge-container">
+                            <div class="gauge-wrapper">
+                                <canvas id="roll-gauge"></canvas>
+                                <p class="gauge-label">Roll</p>
+                            </div>
+                            <div class="gauge-wrapper">
+                                <canvas id="pitch-gauge"></canvas>
+                                <p class="gauge-label">Pitch</p>
+                            </div>
+                        </div>
                     </article>
                 </div>
             </div>
@@ -106,11 +121,16 @@
                                 }
 
                                 .icon {
-                                    font-size: 10px;
+                                    font-size: .75em;
                                     fill: rgba(44, 62, 80, 0.6);
                                     font-family: sans-serif;
                                     text-anchor: middle;
                                     dominant-baseline: middle;
+                                    transition: all 0.2s ease-in-out;
+                                }
+
+                                .icon.icon-active {
+                                    fill: var(--primary-color);
                                 }
                             </style>
 
@@ -121,10 +141,10 @@
 
                             <rect class="line" x="35" y="30" width="30" height="40" fill="none" />
 
-                            <text class="icon" x="50" y="15">⬆️</text>
-                            <text class="icon" x="50" y="85">⬇️</text>
-                            <text class="icon" x="17.5" y="50">⬅️</text>
-                            <text class="icon" x="82.5" y="50">➡️</text>
+                            <text id="icon-up" class="icon" x="50" y="15">⬆️</text>
+                            <text id="icon-down" class="icon" x="50" y="85">⬇️</text>
+                            <text id="icon-left" class="icon" x="17.5" y="50">⬅️</text>
+                            <text id="icon-right" class="icon" x="82.5" y="50">➡️</text>
                         </svg>
 
                         <div id="pad-indicator"></div>
