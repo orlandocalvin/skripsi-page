@@ -54,6 +54,8 @@
                         <div class="orientation-item">
                             <div class="gauge-wrapper">
                                 <canvas id="roll-gauge"></canvas>
+                                <span class="gauge-label gauge-label-min">-180°</span>
+                                <span class="gauge-label gauge-label-max">+180°</span>
                             </div>
                             <div class="orientation-details">
                                 <h2 class="orientation-title">Roll</h2>
@@ -64,6 +66,8 @@
                         <div class="orientation-item">
                             <div class="gauge-wrapper">
                                 <canvas id="pitch-gauge"></canvas>
+                                <span class="gauge-label gauge-label-min">-180°</span>
+                                <span class="gauge-label gauge-label-max">+180°</span>
                             </div>
                             <div class="orientation-details">
                                 <h2 class="orientation-title">Pitch</h2>
@@ -77,28 +81,30 @@
 
             <!-- ===== Middle Column: Feedback & Actions ===== -->
             <div class="column column-middle">
+                <div class="middle-controls-wrapper">
 
-                <!-- ===== Feedback Display ===== -->
-                <div id="feedbackDisplay" class="feedback-display" aria-live="polite" aria-atomic="true">🔄️</div>
+                    <!-- ===== Feedback Display ===== -->
+                    <div id="feedbackDisplay" class="feedback-display" aria-live="polite" aria-atomic="true">🔄️</div>
 
-                <!-- ===== Icon Buttons (Horn & Light) ===== -->
-                <div class="icon-buttons-pair">
-                    <button id="hornBtn" class="icon-btn btn-horn" aria-label="Honk Horn">📢</button>
-                    <button id="lightBtn" class="icon-btn btn-light" aria-label="Toggle Lights">
-                        <span id="lightIcon">💡</span>
-                    </button>
-                </div>
+                    <!-- ===== Icon Buttons (Horn & Light) ===== -->
+                    <div class="icon-buttons-pair">
+                        <button id="hornBtn" class="icon-btn btn-horn" aria-label="Honk Horn">📢</button>
+                        <button id="lightBtn" class="icon-btn btn-light" aria-label="Toggle Lights">
+                            <span id="lightIcon">💡</span>
+                        </button>
+                    </div>
 
-                <!-- ===== Lock Toggle Mechanism ===== -->
-                <div class="lock-mechanism">
-                    <label for="lockToggle" id="lockToggleLabel">
-                        <span class="lock-icon" aria-hidden="true">🔓</span>
-                        <span class="lock-text">Unlocked</span>
-                    </label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="lockToggle" role="switch" aria-labelledby="lockToggleLabel" />
-                        <span class="switch-lever"></span>
-                    </label>
+                    <!-- ===== Lock Toggle Mechanism ===== -->
+                    <div class="lock-mechanism">
+                        <label for="lockToggle" id="lockToggleLabel">
+                            <span class="lock-icon" aria-hidden="true">🔓</span>
+                            <span class="lock-text">Unlocked</span>
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="lockToggle" role="switch" aria-labelledby="lockToggleLabel" />
+                            <span class="switch-lever"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 

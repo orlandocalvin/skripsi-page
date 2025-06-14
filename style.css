@@ -89,12 +89,27 @@ body {
     min-width: 80px;
 }
 
+.controls-area.gesture-mode-active .column-left {
+    /* Give more space to dashboard */
+    flex-grow: 1.5;
+}
+
 .column-middle {
     flex: 1.25;
     min-width: 150px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     padding: 10px 5px;
+}
+
+.middle-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-height: 450px;
+    flex-grow: 1;
 }
 
 .column-right {
@@ -288,16 +303,33 @@ input:checked+.switch-lever:before {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 10px;
+    min-height: 0;
     background-color: var(--light-bg);
     border-radius: 6px;
-    padding: 5px;
-    min-height: 0;
+    padding: 5px 10px;
+    justify-content: space-between;
 }
 
 .orientation-item .gauge-wrapper {
-    flex: 0 0 45%;
-    max-width: 120px;
+    flex: 0 0 50%;
+    position: relative;
+}
+
+.gauge-label {
+    position: absolute;
+    font-size: clamp(0.5rem, 2.5vmin, 0.85rem);
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.gauge-label-min {
+    bottom: 5%;
+    left: 12%;
+}
+
+.gauge-label-max {
+    bottom: 5%;
+    right: 12%;
 }
 
 .orientation-item .orientation-details {
@@ -320,6 +352,9 @@ input:checked+.switch-lever:before {
 #pitch-gauge {
     width: 100%;
     display: block;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    max-width: 210px;
 }
 
 .orientation-pad {
@@ -419,15 +454,6 @@ input:checked+.switch-lever:before {
         opacity: 0.9;
     }
 
-    .controls-area.gesture-mode-active .column-left {
-        /* Give more space to dashboard */
-        flex-grow: 1.5;
-    }
-
-    .column-middle {
-        justify-content: space-evenly;
-    }
-
     .feedback-display {
         font-size: clamp(4em, 10vw, 10em);
         min-height: 120px;
@@ -464,6 +490,15 @@ input:checked+.switch-lever:before {
     .manual-controls-left,
     .manual-controls-right {
         gap: 10px;
+    }
+
+    .gauge-label-min,
+    .gauge-label-max {
+        bottom: 0;
+    }
+
+    .middle-controls-wrapper {
+        max-height: 300px;
     }
 
     .feedback-display {

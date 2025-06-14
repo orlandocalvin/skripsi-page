@@ -11,6 +11,7 @@ const MQTT_CONFIG = {
 const COMMAND_INTERVAL = 100
 const DEADZONE_ANGLE = 30
 const MAX_ANGLE = 90
+const GAUGE_MAX_ANGLE = 180
 
 const ICON_LIGHT_ON = "💡"
 const ICON_LIGHT_OFF = /* html */ `
@@ -33,6 +34,31 @@ const CONTROL_BUTTONS_DATA = [
     { id: "rightBtn", command: "R", icon: "➡️" }
 ]
 
+const GAUGE_ZONES = [
+    { strokeStyle: "#2874a6", min: -180, max: -90 },
+    { strokeStyle: "#3498db", min: -90, max: -30 },
+    { strokeStyle: "#dcdcdc", min: -30, max: 30 },
+    { strokeStyle: "#3498db", min: 30, max: 90 },
+    { strokeStyle: "#2874a6", min: 90, max: 180 }
+]
+
+const GAUGE_OPTIONS = {
+    angle: -0.25,
+    lineWidth: 0.2,
+    radiusScale: 0.9,
+    pointer: { length: 0.5, strokeWidth: 0.03, color: '#333333' },
+    limitMax: true,
+    limitMin: true,
+    strokeColor: '#E0E0E0',
+    highDpiSupport: true,
+}
+
+const GAUGE_TEXT_COLORS = {
+    NEUTRAL: '#333333',
+    ACTIVE: '#3498db',
+    OUTER: '#2874a6'
+}
+
 
 // ===== Application State =====
 let mqttClient = null
@@ -43,6 +69,7 @@ let lockedButtonId = null
 let rollGauge = null
 let pitchGauge = null
 let areGaugesInitialized = false
+let rollValueEl, pitchValueEl
 
 
 // ===== DOM Elements (will be assigned after DOM loads) =====
@@ -128,10 +155,15 @@ function updateFeedbackDisplay(icon) {
 }
 
 function updateOrientationDisplay(data) {
-    const rollEl = document.getElementById("roll-value")
-    const pitchEl = document.getElementById("pitch-value")
-    if (rollEl) rollEl.textContent = data.roll.toFixed(1)
-    if (pitchEl) pitchEl.textContent = data.pitch.toFixed(1)
+    if (rollValueEl) {
+        rollValueEl.textContent = data.roll.toFixed(1)
+        updateValueColor(rollValueEl, data.roll)
+    }
+
+    if (pitchValueEl) {
+        pitchValueEl.textContent = data.pitch.toFixed(1)
+        updateValueColor(pitchValueEl, data.pitch)
+    }
 }
 
 function update2DPad(roll, pitch) {
@@ -165,14 +197,11 @@ function updateIconHighlight(roll, pitch) {
 function createGauge(elementId, range) {
     const gaugeEl = document.getElementById(elementId)
     if (!gaugeEl) return null
-    const gaugeOptions = {
-        angle: -0.25, lineWidth: 0.2, radiusScale: 0.9,
-        pointer: { length: 0.5, strokeWidth: 0.03, color: '#333333' },
-        limitMax: true, limitMin: true,
-        colorStart: '#3498db', colorStop: '#3498db',
-        strokeColor: '#E0E0E0', generateGradient: false, highDpiSupport: true,
-    }
-    const gauge = new Gauge(gaugeEl).setOptions(gaugeOptions)
+
+    // Create new Gauge
+    const finalOptions = { ...GAUGE_OPTIONS, staticZones: GAUGE_ZONES }
+
+    const gauge = new Gauge(gaugeEl).setOptions(finalOptions)
     gauge.maxValue = range
     gauge.setMinValue(-range)
     gauge.set(0)
@@ -180,8 +209,20 @@ function createGauge(elementId, range) {
 }
 
 function initGauges() {
-    rollGauge = createGauge('roll-gauge', MAX_ANGLE)
-    pitchGauge = createGauge('pitch-gauge', MAX_ANGLE)
+    rollGauge = createGauge('roll-gauge', GAUGE_MAX_ANGLE)
+    pitchGauge = createGauge('pitch-gauge', GAUGE_MAX_ANGLE)
+}
+
+function updateValueColor(textElement, value) {
+    const absValue = Math.abs(value) // Use absolute value for color logic
+
+    if (absValue > 90) {
+        textElement.style.color = GAUGE_TEXT_COLORS.OUTER
+    } else if (absValue > 30) {
+        textElement.style.color = GAUGE_TEXT_COLORS.ACTIVE
+    } else {
+        textElement.style.color = GAUGE_TEXT_COLORS.NEUTRAL
+    }
 }
 
 function syncDashboardHeights() {
@@ -254,6 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
     controlsArea = document.querySelector('.controls-area')
     gestureToggle = document.getElementById("gestureToggle")
     gestureToggleLabel = document.getElementById("gestureToggleLabel")
+    rollValueEl = document.getElementById("roll-value")
+    pitchValueEl = document.getElementById("pitch-value")
     lockToggle = document.getElementById("lockToggle")
     lockIcon = document.querySelector("#lockToggleLabel .lock-icon")
     lockText = document.querySelector("#lockToggleLabel .lock-text")
