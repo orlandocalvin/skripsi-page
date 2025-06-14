@@ -1,31 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-/* ===== Root Base ===== */
+/* ===== Global Reset & Root Variables ===== */
 :root {
     --primary-color: #3498db;
     --accent-color: #2ecc71;
     --bg-color: #f0f2f5;
     --text-color: #333;
     --card-shadow: rgba(140, 140, 140, 0.5);
+    --border-color: #ced4da;
+    --light-bg: #f8f9fa;
+    --medium-bg: #e9ecef;
+    --dark-bg: #d8dcdf;
 }
 
-body {
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
+    padding: 0;
+}
+
+/* ===== Base Body & Typography ===== */
+body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     width: 100dvw;
     height: 100dvh;
     user-select: none;
+    overflow: hidden;
 }
 
-/* ===== Container ===== */
+/* ===== Main Layout Structure ===== */
 .app-container {
     display: flex;
     flex-direction: column;
@@ -35,7 +42,6 @@ body {
     overflow: hidden;
 }
 
-/* ===== Header ===== */
 .app-header {
     background-color: var(--primary-color);
     color: white;
@@ -44,15 +50,13 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    gap: 15px;
 }
 
 .header-title-group {
     display: flex;
     align-items: center;
-}
-
-.header-logo {
-    margin-right: 4px;
+    gap: 8px;
 }
 
 .header-actions {
@@ -65,19 +69,19 @@ body {
     cursor: pointer;
 }
 
-/* ===== Controls Layout ===== */
 .controls-area {
     display: flex;
     flex-grow: 1;
     padding: 15px;
     gap: 10px;
-    background-color: #e9ecef;
-    flex-wrap: wrap;
+    background-color: var(--medium-bg);
 }
 
 .column {
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    position: relative;
 }
 
 .column-left {
@@ -88,22 +92,17 @@ body {
 .column-middle {
     flex: 1.25;
     min-width: 150px;
-    padding: 10px 5px;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+    padding: 10px 5px;
 }
 
 .column-right {
     flex: 1.5;
     min-width: 80px;
-    position: relative;
 }
 
-/* ===== Layout Helper Classes ===== */
-.hidden {
-    display: none !important;
-}
-
+/* ===== Layout Mode Containers ===== */
 .manual-controls-left,
 .manual-controls-right,
 .gesture-dashboard-left,
@@ -115,31 +114,19 @@ body {
 }
 
 .manual-controls-left,
-.gesture-dashboard-left,
-.gesture-dashboard-right {
+.gesture-dashboard-left {
     flex-direction: column;
 }
 
-.manual-controls-right {
-    flex-direction: row;
-}
-
+.gesture-dashboard-left,
 .gesture-dashboard-right {
     justify-content: center;
+    align-items: center;
 }
 
-.controls-area.gesture-mode-active .lock-mechanism {
-    display: none;
-}
-
-.controls-area.gesture-mode-active .feedback-display {
-    flex-grow: 1;
-    max-height: 35vmin;
-}
-
-/* ===== Buttons ===== */
+/* ===== Generic Components: Buttons, Toggles, etc. ===== */
 .control-btn {
-    background-color: #d8dcdf;
+    background-color: var(--dark-bg);
     border: none;
     border-radius: 8px;
     color: #2c3e50;
@@ -157,22 +144,6 @@ body {
     background-color: #c8cdd2;
 }
 
-.lock-mechanism {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.05em;
-    gap: 10px;
-}
-
-.lock-mechanism label[for="lockToggle"] {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 100px;
-    cursor: pointer;
-}
-
 .control-btn:active,
 .control-btn.btn-locked {
     background-color: #b8bdc2;
@@ -180,22 +151,6 @@ body {
     box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
-.column-left .control-btn {
-    min-height: 70px;
-}
-
-.column-right .control-btn {
-    min-height: calc(70px * 2 + 10px);
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-}
-
-.icon-left,
-.icon-right {
-    rotate: -90deg;
-}
-
-/* ===== Icon Buttons (Horn & Light) ===== */
 .icon-buttons-pair {
     display: flex;
     justify-content: center;
@@ -204,10 +159,10 @@ body {
 }
 
 .icon-btn {
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    color: #333;
+    color: var(--text-color);
     font-size: clamp(1.5rem, 6vh, 2rem);
     width: clamp(70px, 15vw, 110px);
     aspect-ratio: 1 / 1;
@@ -219,7 +174,7 @@ body {
 }
 
 .icon-btn:hover {
-    background-color: #e9ecef;
+    background-color: var(--medium-bg);
 }
 
 .icon-btn:active {
@@ -228,7 +183,6 @@ body {
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== Toggle Switch ===== */
 .toggle-switch {
     position: relative;
     display: inline-block;
@@ -245,10 +199,7 @@ body {
 
 .switch-lever {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-color: #ccc;
     border-radius: 24px;
     cursor: pointer;
@@ -271,58 +222,110 @@ input:checked+.switch-lever {
     background-color: var(--primary-color);
 }
 
-.gesture-toggle-switch input:checked+.switch-lever {
-    background-color: var(--accent-color);
-}
-
 input:checked+.switch-lever:before {
     transform: translateX(22px);
 }
 
-/* ===== Feedback Display ===== */
-.feedback-display {
-    width: 95%;
-    color: #ecf0f1;
-    border-radius: 8px;
-    text-align: center;
-    font-size: clamp(2em, 6vh, 5em);
-    padding: 0.1em 0;
+.gesture-toggle-switch input:checked+.switch-lever {
+    background-color: var(--accent-color);
+}
+
+/* ===== Manual Mode Specific Styles ===== */
+.column-left .control-btn {
+    min-height: 70px;
+}
+
+.column-right .control-btn {
+    min-height: calc(70px * 2 + 10px);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+.column-right .control-btn .icon-left,
+.column-right .control-btn .icon-right {
+    rotate: -90deg;
+}
+
+.lock-mechanism {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 1.05em;
+    gap: 10px;
 }
 
-/* ===== Card: Orientation Display ===== */
-.card {
+.lock-mechanism label[for="lockToggle"] {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+/* ===== Gesture Mode Components ===== */
+.feedback-display {
+    width: 95%;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(2em, 6vh, 5em);
+    color: #ecf0f1;
+}
+
+.card-orientation-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     background-color: white;
     box-shadow: 2px 2px 12px 1px var(--card-shadow);
-    padding: 10px;
+    padding: 15px;
     border-radius: 8px;
     width: 100%;
-    box-sizing: border-box;
 }
 
-.card-title {
+.orientation-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--light-bg);
+    border-radius: 6px;
+    padding: 5px;
+    min-height: 0;
+}
+
+.orientation-item .gauge-wrapper {
+    flex: 0 0 45%;
+    max-width: 120px;
+}
+
+.orientation-item .orientation-details {
+    flex: 1;
+    text-align: center;
+}
+
+.orientation-title {
+    font-size: clamp(1rem, 3.5vmin, 1.3rem);
     color: #003366;
-    font-weight: bold;
-    font-size: clamp(1rem, 3.5vmin, 1.4rem);
-    margin: 5px 0 10px;
-    text-align: center;
-}
-
-.reading {
-    font-size: clamp(0.9rem, 3vmin, 1.2rem);
-    text-align: center;
     margin-bottom: 5px;
 }
 
-/* ===== 2D Orientation Pad Styles ===== */
-.orientation-pad {
-    max-width: 100%;
-    max-height: 100%;
-    aspect-ratio: 1 / 1;
+.orientation-reading {
+    font-size: clamp(1.2rem, 4.5vmin, 2rem);
+    font-weight: 500;
+}
 
-    background-color: #d8dcdf;
+#roll-gauge,
+#pitch-gauge {
+    width: 100%;
+    display: block;
+}
+
+.orientation-pad {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--dark-bg);
     border-radius: 8px;
     position: relative;
     overflow: hidden;
@@ -331,12 +334,30 @@ input:checked+.switch-lever:before {
 
 .pad-background-svg {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-
     z-index: 1;
+}
+
+/* SVG styles moved from HTML to here for better management */
+.pad-background-svg .line {
+    stroke: rgba(44, 62, 80, 0.4);
+    stroke-width: 0.5;
+    stroke-dasharray: 2 2;
+}
+
+.pad-background-svg .icon {
+    font-size: .75em;
+    fill: rgba(44, 62, 80, 0.6);
+    font-family: sans-serif;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    transition: all 0.2s ease-in-out;
+}
+
+.pad-background-svg .icon.icon-active {
+    fill: var(--primary-color);
 }
 
 #pad-indicator {
@@ -348,10 +369,8 @@ input:checked+.switch-lever:before {
     background-color: var(--primary-color);
     border-radius: 50%;
     border: 2px solid white;
-
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
-
     transform: translate(-50%, -50%);
     z-index: 2;
 }
@@ -360,60 +379,49 @@ input:checked+.switch-lever:before {
     box-shadow: 0 0 12px 4px hsla(204, 70%, 53%, 0.7);
 }
 
-.gauge-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+
+/* ===== State & Layout Helper Classes ===== */
+.hidden {
+    display: none !important;
 }
 
-.gauge-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-    max-width: 160px;
+.controls-area.gesture-mode-active .lock-mechanism,
+.controls-area.gesture-mode-active .manual-controls-left,
+.controls-area.gesture-mode-active .manual-controls-right {
+    display: none;
 }
 
-#roll-gauge,
-#pitch-gauge {
-    width: 100%;
+.controls-area:not(.gesture-mode-active) .gesture-dashboard-left,
+.controls-area:not(.gesture-mode-active) .gesture-dashboard-right {
+    display: none;
 }
 
-.gauge-label {
-    margin: 0;
-    font-size: clamp(0.9rem, 3vmin, 1.2rem);
+.controls-area.gesture-mode-active .feedback-display {
+    flex-grow: 1;
+    max-height: 35vmin;
 }
 
-/* ===== Responsive ===== */
+
+/* ===== Responsive Design ===== */
 @media (orientation: landscape) {
     .header-logo {
-        font-size: 3em;
-        margin-top: -0.4em;
+        font-size: 2.5em;
+        margin-top: -0.2em;
     }
 
     .header-text h1 {
         font-size: 1em;
-        margin: 0;
+        font-weight: 500;
     }
 
     .header-text p {
         font-size: 0.8em;
-        margin: 0;
         opacity: 0.9;
     }
 
-    .header-actions {
-        margin-right: 0.3em;
-    }
-
-    .gesture-dashboard-right {
-        gap: 0;
-    }
-
     .controls-area.gesture-mode-active .column-left {
-        flex: 1.5;
+        /* Give more space to dashboard */
+        flex-grow: 1.5;
     }
 
     .column-middle {
@@ -428,10 +436,6 @@ input:checked+.switch-lever:before {
 }
 
 @media (orientation: portrait) {
-    body {
-        overflow: hidden;
-    }
-
     .app-container {
         width: 100dvh;
         height: 100dvw;
@@ -439,6 +443,7 @@ input:checked+.switch-lever:before {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
     }
 
     .header-logo {
@@ -448,50 +453,17 @@ input:checked+.switch-lever:before {
 
     .header-text h1 {
         font-size: 0.9em;
-        margin: 0;
         font-weight: 500;
     }
 
     .header-text p {
         font-size: 0.7em;
-        margin: 0;
         opacity: 0.9;
     }
 
-    .header-actions {
-        margin-right: 0.6em;
-    }
-
     .manual-controls-left,
-    .manual-controls-right,
-    .gesture-dashboard-left {
+    .manual-controls-right {
         gap: 10px;
-    }
-
-    .gesture-dashboard-right {
-        gap: 0;
-    }
-
-    .gauge-container {
-        justify-content: center;
-    }
-
-    .gauge-label {
-        font-size: 0.75rem;
-    }
-
-    .card-orientation {
-        flex-grow: 1;
-        min-height: 0;
-    }
-
-    .card-gauges {
-        flex-grow: 2;
-        min-height: 0;
-    }
-
-    .column-middle {
-        justify-content: space-between;
     }
 
     .feedback-display {

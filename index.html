@@ -7,16 +7,20 @@
     <title>ESP8266 RC Car</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="style.css" />
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.7/gauge.min.js"></script>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gauge.js/1.3.7/gauge.min.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 
 <body>
+    <!-- ===== App Container ===== -->
     <div class="app-container">
-        <!-- ===== Header ===== -->
+
+        <!-- ===== Header Section ===== -->
         <header class="app-header">
             <div class="header-title-group">
-                <span class="header-logo">🚘</span>
+                <span class="header-logo" aria-hidden="true">🚘</span>
                 <div class="header-text">
                     <h1>ESP8266 RC Car</h1>
                     <p>192.168.4.1</p>
@@ -25,7 +29,7 @@
             <div class="header-actions">
                 <label id="gestureToggleLabel" for="gestureToggle">Gesture Mode</label>
                 <label class="toggle-switch gesture-toggle-switch">
-                    <input type="checkbox" id="gestureToggle">
+                    <input type="checkbox" id="gestureToggle" role="switch" aria-labelledby="gestureToggleLabel">
                     <span class="switch-lever"></span>
                 </label>
             </div>
@@ -33,128 +37,106 @@
 
         <!-- ===== Main Control Area ===== -->
         <main class="controls-area">
-            <!-- === Left Column === -->
+
+            <!-- ===== Left Column: Manual & Gesture Left ===== -->
             <div class="column column-left">
-                <!-- Manual Mode Controls -->
+
+                <!-- ===== Manual Controls Left ===== -->
                 <div class="manual-controls-left">
-                    <button id="forwardBtn" class="control-btn btn-up">
-                        ⬆️
-                    </button>
-                    <button id="backwardBtn" class="control-btn btn-down">
-                        ⬇️
-                    </button>
+                    <button id="forwardBtn" class="control-btn btn-up" aria-label="Move Forward">⬆️</button>
+                    <button id="backwardBtn" class="control-btn btn-down" aria-label="Move Backward">⬇️</button>
                 </div>
 
-                <!-- Gesture Mode Orientation -->
-                <div class="gesture-dashboard-left hidden">
-                    <article class="card card-orientation">
-                        <h2 class="card-title">Orientation</h2>
-                        <p class="reading">Roll: <span id="roll">0</span>°</p>
-                        <p class="reading">Pitch: <span id="pitch">0</span>°</p>
-                    </article>
+                <!-- ===== Gesture Dashboard Left ===== -->
+                <div class="gesture-dashboard-left">
+                    <article class="card-orientation-dashboard">
 
-                    <article class="card card-gauges">
-                        <h2 class="card-title">Gauges</h2>
-                        <div class="gauge-container">
+                        <div class="orientation-item">
                             <div class="gauge-wrapper">
                                 <canvas id="roll-gauge"></canvas>
-                                <p class="gauge-label">Roll</p>
                             </div>
-                            <div class="gauge-wrapper">
-                                <canvas id="pitch-gauge"></canvas>
-                                <p class="gauge-label">Pitch</p>
+                            <div class="orientation-details">
+                                <h2 class="orientation-title">Roll</h2>
+                                <p class="orientation-reading"><span id="roll-value">0</span>°</p>
                             </div>
                         </div>
+
+                        <div class="orientation-item">
+                            <div class="gauge-wrapper">
+                                <canvas id="pitch-gauge"></canvas>
+                            </div>
+                            <div class="orientation-details">
+                                <h2 class="orientation-title">Pitch</h2>
+                                <p class="orientation-reading"><span id="pitch-value">0</span>°</p>
+                            </div>
+                        </div>
+
                     </article>
                 </div>
             </div>
 
-            <!-- === Middle Column === -->
+            <!-- ===== Middle Column: Feedback & Actions ===== -->
             <div class="column column-middle">
-                <!-- Action Feedback -->
-                <div id="feedbackDisplay" class="feedback-display">🔄️</div>
 
-                <!-- Icon Buttons: Horn and Light -->
+                <!-- ===== Feedback Display ===== -->
+                <div id="feedbackDisplay" class="feedback-display" aria-live="polite" aria-atomic="true">🔄️</div>
+
+                <!-- ===== Icon Buttons (Horn & Light) ===== -->
                 <div class="icon-buttons-pair">
-                    <button id="hornBtn" class="icon-btn btn-horn">
-                        📢
-                    </button>
-                    <button id="lightBtn" class="icon-btn btn-light">
+                    <button id="hornBtn" class="icon-btn btn-horn" aria-label="Honk Horn">📢</button>
+                    <button id="lightBtn" class="icon-btn btn-light" aria-label="Toggle Lights">
                         <span id="lightIcon">💡</span>
                     </button>
                 </div>
 
-                <!-- Lock Mechanism -->
+                <!-- ===== Lock Toggle Mechanism ===== -->
                 <div class="lock-mechanism">
                     <label for="lockToggle" id="lockToggleLabel">
-                        <span class="lock-icon">🔓</span>
+                        <span class="lock-icon" aria-hidden="true">🔓</span>
                         <span class="lock-text">Unlocked</span>
                     </label>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="lockToggle" />
+                        <input type="checkbox" id="lockToggle" role="switch" aria-labelledby="lockToggleLabel" />
                         <span class="switch-lever"></span>
                     </label>
                 </div>
             </div>
 
-            <!-- === Right Column === -->
+            <!-- ===== Right Column: Manual & Gesture Right ===== -->
             <div class="column column-right">
-                <!-- Manual Mode Controls -->
+
+                <!-- ===== Manual Controls Right ===== -->
                 <div class="manual-controls-right">
-                    <button id="leftBtn" class="control-btn btn-left">
+                    <button id="leftBtn" class="control-btn btn-left" aria-label="Turn Left">
                         <span class="icon-left">⬅️</span>
                     </button>
-                    <button id="rightBtn" class="control-btn btn-right">
+                    <button id="rightBtn" class="control-btn btn-right" aria-label="Turn Right">
                         <span class="icon-right">➡️</span>
                     </button>
                 </div>
 
-                <!-- Gesture Mode 2D Orientation Pad -->
-                <div class="gesture-dashboard-right hidden">
+                <!-- ===== Gesture Dashboard Right (Orientation Pad) ===== -->
+                <div class="gesture-dashboard-right">
                     <div class="orientation-pad">
-                        <svg class="pad-background-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <style>
-                                .line {
-                                    stroke: rgba(44, 62, 80, 0.4);
-                                    stroke-width: 0.5;
-                                    stroke-dasharray: 2 2;
-                                }
-
-                                .icon {
-                                    font-size: .75em;
-                                    fill: rgba(44, 62, 80, 0.6);
-                                    font-family: sans-serif;
-                                    text-anchor: middle;
-                                    dominant-baseline: middle;
-                                    transition: all 0.2s ease-in-out;
-                                }
-
-                                .icon.icon-active {
-                                    fill: var(--primary-color);
-                                }
-                            </style>
-
+                        <svg class="pad-background-svg" viewBox="0 0 100 100" preserveAspectRatio="none"
+                            aria-hidden="true">
                             <line class="line" x1="35" y1="30" x2="0" y2="0" />
                             <line class="line" x1="65" y1="30" x2="100" y2="0" />
                             <line class="line" x1="35" y1="70" x2="0" y2="100" />
                             <line class="line" x1="65" y1="70" x2="100" y2="100" />
-
                             <rect class="line" x="35" y="30" width="30" height="40" fill="none" />
-
                             <text id="icon-up" class="icon" x="50" y="15">⬆️</text>
                             <text id="icon-down" class="icon" x="50" y="85">⬇️</text>
                             <text id="icon-left" class="icon" x="17.5" y="50">⬅️</text>
                             <text id="icon-right" class="icon" x="82.5" y="50">➡️</text>
                         </svg>
-
                         <div id="pad-indicator"></div>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
-
-    <script src="script.js"></script>
 </body>
 
 </html>
