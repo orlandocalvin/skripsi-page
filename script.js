@@ -4,14 +4,17 @@ const MQTT_CONFIG = {
     topics: {
         cmd: "orca/skripsi/cmd",
         mode: "orca/skripsi/mode",
-        web: "orca/skripsi/web"
+        web: "orca/skripsi/web",
+        car: "orca/skripsi/car/status",
+        esp32: "orca/skripsi/esp32/status"
     }
 }
 
 const COMMAND_INTERVAL = 100
 const DEADZONE_ANGLE = 30
-const MAX_ANGLE = 90
+const PAD_MAX_ANGLE = 90
 const GAUGE_MAX_ANGLE = 180
+const ESP32_DATA_TIMEOUT = 3000 // ms
 
 const ICON_LIGHT_ON = "💡"
 const ICON_LIGHT_OFF = /* html */ `
@@ -70,12 +73,17 @@ let rollGauge = null
 let pitchGauge = null
 let areGaugesInitialized = false
 let rollValueEl, pitchValueEl
+let rollAnimationId = null
+let pitchAnimationId = null
+let isCarOnline = false
+let isEsp32Online = false
+let esp32DataTimeoutId = null
 
 
 // ===== DOM Elements (will be assigned after DOM loads) =====
 let controlsArea, gestureToggle, gestureToggleLabel, lockToggle, lockIcon, lockText,
     feedbackDisplay, lightBtn, lightIcon, hornBtn, orientationPad, orientationCard,
-    padIndicator, padIcons = {}
+    padIndicator, padIcons, connectionStatus, statusDot, statusText, middleControlsWrapper = {}
 
 
 // ===== Core Functions =====
@@ -84,13 +92,18 @@ function initMQTT() {
 
     mqttClient.on('connect', () => {
         console.log("MQTT Connected")
-        // Subscribe to all topics at once
-        mqttClient.subscribe(Object.values(MQTT_CONFIG.topics))
+        mqttClient.subscribe(Object.values(MQTT_CONFIG.topics)) // Subscribe to all topics at once
+        updateConnectionStatus()
     })
 
     mqttClient.on('error', (err) => {
         console.error("MQTT Error:", err)
-        mqttClient.end()
+        updateConnectionStatus()
+    })
+
+    mqttClient.on('close', () => {
+        console.log("MQTT Connection Closed")
+        updateConnectionStatus()
     })
 
     mqttClient.on('message', handleMqttMessage)
@@ -135,6 +148,10 @@ function updateGestureModeUI(isGestureMode) {
         }
 
         setTimeout(syncDashboardHeights, 50)
+    } else {
+        if (middleControlsWrapper) {
+            middleControlsWrapper.style.height = null
+        }
     }
 }
 
@@ -156,12 +173,12 @@ function updateFeedbackDisplay(icon) {
 
 function updateOrientationDisplay(data) {
     if (rollValueEl) {
-        rollValueEl.textContent = data.roll.toFixed(1)
+        animateValue('rollAnimationId', rollValueEl, data.roll)
         updateValueColor(rollValueEl, data.roll)
     }
 
     if (pitchValueEl) {
-        pitchValueEl.textContent = data.pitch.toFixed(1)
+        animateValue('pitchAnimationId', pitchValueEl, data.pitch)
         updateValueColor(pitchValueEl, data.pitch)
     }
 }
@@ -171,11 +188,11 @@ function update2DPad(roll, pitch) {
     padIndicator.classList.toggle('indicator-active', isActive)
     updateIconHighlight(roll, pitch)
 
-    const clampedRoll = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, roll))
-    const clampedPitch = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, pitch))
+    const clampedRoll = Math.max(-PAD_MAX_ANGLE, Math.min(PAD_MAX_ANGLE, roll))
+    const clampedPitch = Math.max(-PAD_MAX_ANGLE, Math.min(PAD_MAX_ANGLE, pitch))
 
-    const xPos = 50 - (clampedRoll / MAX_ANGLE) * 50
-    const yPos = 50 + (clampedPitch / MAX_ANGLE) * 50
+    const xPos = 50 - (clampedRoll / PAD_MAX_ANGLE) * 50
+    const yPos = 50 + (clampedPitch / PAD_MAX_ANGLE) * 50
 
     padIndicator.style.left = `${xPos}%`
     padIndicator.style.top = `${yPos}%`
@@ -185,11 +202,22 @@ function updateIconHighlight(roll, pitch) {
     Object.values(padIcons).forEach(icon => icon.classList.remove('icon-active'))
 
     // Activate icons based on roll and pitch
-    if (pitch < -DEADZONE_ANGLE && pitch >= -MAX_ANGLE) padIcons.up.classList.add('icon-active')
-    else if (pitch > DEADZONE_ANGLE && pitch <= MAX_ANGLE) padIcons.down.classList.add('icon-active')
+    if (pitch < -DEADZONE_ANGLE && pitch >= -PAD_MAX_ANGLE) padIcons.up.classList.add('icon-active')
+    else if (pitch > DEADZONE_ANGLE && pitch <= PAD_MAX_ANGLE) padIcons.down.classList.add('icon-active')
 
-    if (roll > DEADZONE_ANGLE && roll <= MAX_ANGLE) padIcons.left.classList.add('icon-active')
-    else if (roll < -DEADZONE_ANGLE && roll >= -MAX_ANGLE) padIcons.right.classList.add('icon-active')
+    if (roll > DEADZONE_ANGLE && roll <= PAD_MAX_ANGLE) padIcons.left.classList.add('icon-active')
+    else if (roll < -DEADZONE_ANGLE && roll >= -PAD_MAX_ANGLE) padIcons.right.classList.add('icon-active')
+}
+
+function resetGestureDisplays() {
+    updateOrientationDisplay({ roll: 0, pitch: 0 }) // reset roll and pitch values
+
+    if (areGaugesInitialized) { // reset gauges
+        rollGauge.set(0)
+        pitchGauge.set(0)
+    }
+
+    update2DPad(0, 0) // reset pad indicator position
 }
 
 
@@ -226,8 +254,10 @@ function updateValueColor(textElement, value) {
 }
 
 function syncDashboardHeights() {
-    if (gestureToggle.checked && orientationPad && orientationCard) {
-        orientationCard.style.height = `${orientationPad.offsetHeight}px`
+    if (gestureToggle.checked && orientationPad && orientationCard && middleControlsWrapper) {
+        const padHeight = orientationPad.offsetHeight
+        orientationCard.style.height = `${padHeight}px`
+        middleControlsWrapper.style.height = `${padHeight}px`
     }
 }
 
@@ -270,12 +300,25 @@ function handleMqttMessage(topic, message) {
         updateGestureToggleLabel()
 
     } else if (topic === MQTT_CONFIG.topics.web) { // Handle web data
-        try {
+        // === WATCHDOG LOGIC START ===
+        clearTimeout(esp32DataTimeoutId)
+
+        esp32DataTimeoutId = setTimeout(() => {
+            isEsp32Online = false
+            resetGestureDisplays()
+            updateConnectionStatus()
+        }, ESP32_DATA_TIMEOUT)
+        // === WATCHDOG LOGIC END ===
+
+        try { // process web data
             const data = JSON.parse(payload)
+
             updateOrientationDisplay(data)
             update2DPad(data.roll, data.pitch)
+
             if (rollGauge) rollGauge.set(data.roll)
             if (pitchGauge) pitchGauge.set(data.pitch)
+
         } catch (err) {
             console.error("JSON Parse Error:", err)
         }
@@ -284,6 +327,93 @@ function handleMqttMessage(topic, message) {
         if (gestureToggle.checked) {
             const icon = COMMAND_ICONS[payload] || ""
             updateFeedbackDisplay(icon)
+        }
+
+    } else if (topic === MQTT_CONFIG.topics.esp32) { // Handle ESP32 status
+        const wasOnline = isEsp32Online
+        isEsp32Online = (payload === 'online')
+        console.log(`ESP32 status is now: ${isEsp32Online ? 'Online' : 'Offline'}`)
+
+        if (wasOnline && !isEsp32Online) { // If ESP32 went offline
+            resetGestureDisplays()
+        }
+        updateConnectionStatus()
+
+    } else if (topic === MQTT_CONFIG.topics.car) { // Handle car status
+        isCarOnline = (payload === 'online')
+        console.log(`Car status is now: ${isCarOnline ? 'Online' : 'Offline'}`)
+        updateConnectionStatus()
+    }
+}
+
+function animateValue(stateKey, element, endValue) {
+    // Clear any existing animation frame
+    if (window[stateKey]) {
+        cancelAnimationFrame(window[stateKey])
+    }
+
+    const startValue = parseFloat(element.textContent) || 0
+    const duration = 300 // ms
+    let startTime = null
+
+    // this function called on each animation frame
+    const step = (currentTime) => {
+        if (!startTime) {
+            startTime = currentTime
+        }
+
+        const elapsedTime = currentTime - startTime
+        const progress = Math.min(elapsedTime / duration, 1)
+
+        const displayValue = startValue + (endValue - startValue) * progress
+        element.textContent = displayValue.toFixed(1)
+
+        // if the animation is not complete, request the next frame
+        if (progress < 1) {
+            window[stateKey] = requestAnimationFrame(step)
+        } else {
+            // make sure the final value is set
+            element.textContent = endValue.toFixed(1)
+            window[stateKey] = null
+        }
+    }
+
+    // start the animation
+    window[stateKey] = requestAnimationFrame(step)
+}
+
+function updateConnectionStatus() {
+    if (!mqttClient || !mqttClient.connected) { // If MQTT client is not connected
+        connectionStatus.className = 'status-disconnected'
+        statusText.textContent = 'Disconnected'
+        isEsp32Online = false
+        isCarOnline = false
+        clearTimeout(esp32DataTimeoutId)
+        return
+    }
+
+    const isInGestureMode = gestureToggle.checked // check gesture toggle state
+
+    if (isInGestureMode) { // gesture mode logic
+        if (!isEsp32Online) {
+            connectionStatus.className = 'status-waiting'
+            statusText.textContent = 'Waiting for ESP32-C3'
+
+        } else if (!isCarOnline) {
+            connectionStatus.className = 'status-waiting'
+            statusText.textContent = 'Waiting for RC Car'
+
+        } else {
+            connectionStatus.className = 'status-connected'
+            statusText.textContent = 'Connected'
+        }
+    } else { // manual mode logic
+        if (!isCarOnline) {
+            connectionStatus.className = 'status-waiting'
+            statusText.textContent = 'Waiting for RC Car'
+        } else {
+            connectionStatus.className = 'status-connected'
+            statusText.textContent = 'Connected'
         }
     }
 }
@@ -313,6 +443,10 @@ document.addEventListener('DOMContentLoaded', () => {
         left: document.getElementById('icon-left'),
         right: document.getElementById('icon-right')
     }
+    connectionStatus = document.getElementById("connectionStatus")
+    statusDot = connectionStatus.querySelector(".status-dot")
+    statusText = connectionStatus.querySelector(".status-text")
+    middleControlsWrapper = document.querySelector('.middle-controls-wrapper')
 
     // 2. Set up event listeners
     gestureToggle.addEventListener("change", () => {
@@ -320,6 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGestureToggleLabel()
         publishGestureMode(isEnabled)
         updateGestureModeUI(isEnabled)
+        updateConnectionStatus()
     })
 
     lockToggle.addEventListener("change", () => {
@@ -369,4 +504,5 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLockUI()
     updateGestureToggleLabel()
     updateFeedbackDisplay("")
+    updateConnectionStatus()
 })

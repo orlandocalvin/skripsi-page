@@ -59,6 +59,23 @@ body {
     gap: 8px;
 }
 
+.header-logo {
+    font-size: clamp(2rem, 8vmin, 3rem);
+    margin-top: -.25rem;
+}
+
+.header-text h1 {
+    font-size: clamp(0.9rem, 3.5vmin, 1.2rem);
+    font-weight: 500;
+    margin: 0;
+}
+
+.header-text p {
+    font-size: clamp(0.7rem, 2.5vmin, 0.9rem);
+    margin: 0;
+    opacity: 0.9;
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -67,6 +84,69 @@ body {
 
 .header-actions label[for="gestureToggle"] {
     cursor: pointer;
+}
+
+/* ===== Connection Status ===== */
+#connectionStatus {
+    display: flex;
+    align-items: center;
+    gap: clamp(5px, 1.5vw, 10px);
+    padding: clamp(4px, 1vmin, 8px) clamp(8px, 2vw, 16px);
+    border-radius: 50px;
+    font-weight: 500;
+    transition: background-color 0.5s ease, color 0.5s ease;
+
+    font-size: clamp(0.7rem, 2.2vmin, 0.95rem);
+}
+
+.status-dot {
+    width: clamp(8px, 2.2vmin, 12px);
+    height: clamp(8px, 2.2vmin, 12px);
+    border-radius: 50%;
+    transition: background-color 0.5s ease;
+    flex-shrink: 0;
+}
+
+#connectionStatus.status-disconnected {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#connectionStatus.status-disconnected .status-dot {
+    background-color: #c0392b;
+}
+
+#connectionStatus.status-waiting {
+    background-color: #f1c40f;
+    color: #333;
+}
+
+#connectionStatus.status-waiting .status-dot {
+    background-color: #f39c12;
+    animation: pulse 1.5s infinite;
+}
+
+#connectionStatus.status-connected {
+    background-color: #2ecc71;
+    color: white;
+}
+
+#connectionStatus.status-connected .status-dot {
+    background-color: #27ae60;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .controls-area {
@@ -103,13 +183,12 @@ body {
 }
 
 .middle-controls-wrapper {
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    max-height: 450px;
-    flex-grow: 1;
 }
 
 .column-right {
@@ -304,7 +383,7 @@ input:checked+.switch-lever:before {
     display: flex;
     align-items: center;
     min-height: 0;
-    background-color: var(--light-bg);
+    background-color: #ecedee;
     border-radius: 6px;
     padding: 5px 10px;
     justify-content: space-between;
@@ -317,18 +396,18 @@ input:checked+.switch-lever:before {
 
 .gauge-label {
     position: absolute;
-    font-size: clamp(0.5rem, 2.5vmin, 0.85rem);
+    font-size: clamp(0.5rem, 2.5vmin, 0.95rem);
     color: #6c757d;
     font-weight: 500;
 }
 
 .gauge-label-min {
-    bottom: 5%;
+    bottom: 3%;
     left: 12%;
 }
 
 .gauge-label-max {
-    bottom: 5%;
+    bottom: 3%;
     right: 12%;
 }
 
@@ -346,6 +425,10 @@ input:checked+.switch-lever:before {
 .orientation-reading {
     font-size: clamp(1.2rem, 4.5vmin, 2rem);
     font-weight: 500;
+}
+
+.orientation-reading span {
+    transition: color 0.2s ease-in-out;
 }
 
 #roll-gauge,
@@ -375,7 +458,7 @@ input:checked+.switch-lever:before {
     z-index: 1;
 }
 
-/* SVG styles moved from HTML to here for better management */
+/* SVG Style */
 .pad-background-svg .line {
     stroke: rgba(44, 62, 80, 0.4);
     stroke-width: 0.5;
@@ -405,9 +488,10 @@ input:checked+.switch-lever:before {
     border-radius: 50%;
     border: 2px solid white;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, box-shadow 0.3s ease-in-out;
     transform: translate(-50%, -50%);
     z-index: 2;
+
+    transition: top 33ms linear, left 33ms linear, background-color 0.3s, box-shadow 0.3s ease-in-out;
 }
 
 #pad-indicator.indicator-active {
@@ -436,22 +520,16 @@ input:checked+.switch-lever:before {
     max-height: 35vmin;
 }
 
+.controls-area.gesture-mode-active .feedback-display {
+    flex-grow: 1;
+    min-height: 0;
+}
+
 
 /* ===== Responsive Design ===== */
 @media (orientation: landscape) {
     .header-logo {
-        font-size: 2.5em;
-        margin-top: -0.2em;
-    }
-
-    .header-text h1 {
-        font-size: 1em;
-        font-weight: 500;
-    }
-
-    .header-text p {
-        font-size: 0.8em;
-        opacity: 0.9;
+        margin-top: -1rem;
     }
 
     .feedback-display {
@@ -472,21 +550,6 @@ input:checked+.switch-lever:before {
         transform-origin: center center;
     }
 
-    .header-logo {
-        font-size: 2.25em;
-        margin-top: -0.25em;
-    }
-
-    .header-text h1 {
-        font-size: 0.9em;
-        font-weight: 500;
-    }
-
-    .header-text p {
-        font-size: 0.7em;
-        opacity: 0.9;
-    }
-
     .manual-controls-left,
     .manual-controls-right {
         gap: 10px;
@@ -495,10 +558,6 @@ input:checked+.switch-lever:before {
     .gauge-label-min,
     .gauge-label-max {
         bottom: 0;
-    }
-
-    .middle-controls-wrapper {
-        max-height: 300px;
     }
 
     .feedback-display {

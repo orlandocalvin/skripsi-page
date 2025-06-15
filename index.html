@@ -23,8 +23,11 @@
                 <span class="header-logo" aria-hidden="true">🚘</span>
                 <div class="header-text">
                     <h1>ESP8266 RC Car</h1>
-                    <p>192.168.4.1</p>
                 </div>
+            </div>
+            <div id="connectionStatus" class="status-disconnected">
+                <span class="status-dot"></span>
+                <span class="status-text">Disconnected</span>
             </div>
             <div class="header-actions">
                 <label id="gestureToggleLabel" for="gestureToggle">Gesture Mode</label>
@@ -84,7 +87,9 @@
                 <div class="middle-controls-wrapper">
 
                     <!-- ===== Feedback Display ===== -->
-                    <div id="feedbackDisplay" class="feedback-display" aria-live="polite" aria-atomic="true">🔄️</div>
+                    <div id="feedbackDisplay" class="feedback-display" aria-live="polite" aria-atomic="true">
+                        <!-- Kosong? -->
+                    </div>
 
                     <!-- ===== Icon Buttons (Horn & Light) ===== -->
                     <div class="icon-buttons-pair">
