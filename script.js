@@ -313,11 +313,18 @@ function handleMqttMessage(topic, message) {
         try { // process web data
             const data = JSON.parse(payload)
 
-            updateOrientationDisplay(data)
-            update2DPad(data.roll, data.pitch)
+            // Validate data structure
+            const isDataValid = typeof data.roll === 'number' && isFinite(data.roll) &&
+                typeof data.pitch === 'number' && isFinite(data.pitch)
 
-            if (rollGauge) rollGauge.set(data.roll)
-            if (pitchGauge) pitchGauge.set(data.pitch)
+            if (isDataValid) { // Update UI with valid data
+                updateOrientationDisplay(data)
+                update2DPad(data.roll, data.pitch)
+                if (rollGauge) rollGauge.set(data.roll)
+                if (pitchGauge) pitchGauge.set(data.pitch)
+            } else { // Log warning for invalid data
+                console.warn("Received invalid sensor data:", data)
+            }
 
         } catch (err) {
             console.error("JSON Parse Error:", err)
@@ -450,6 +457,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Set up event listeners
     gestureToggle.addEventListener("change", () => {
+        stopAllCommands() // stop all commands
+
         const isEnabled = gestureToggle.checked
         updateGestureToggleLabel()
         publishGestureMode(isEnabled)
