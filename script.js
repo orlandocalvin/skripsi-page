@@ -83,7 +83,7 @@ let esp32DataTimeoutId = null
 // ===== DOM Elements (will be assigned after DOM loads) =====
 let controlsArea, gestureToggle, gestureToggleLabel, lockToggle, lockIcon, lockText,
     feedbackDisplay, lightBtn, lightIcon, hornBtn, orientationPad, orientationCard,
-    padIndicator, padIcons, connectionStatus, statusDot, statusText, middleControlsWrapper = {}
+    padIndicator, padIcons, connectionStatus, statusDot, statusText, middleControlsWrapper
 
 
 // ===== Core Functions =====
@@ -210,6 +210,7 @@ function updateIconHighlight(roll, pitch) {
 }
 
 function resetGestureDisplays() {
+    stopAllCommands() // stop all commands when esp32 goes offline
     updateOrientationDisplay({ roll: 0, pitch: 0 }) // reset roll and pitch values
 
     if (areGaugesInitialized) { // reset gauges
@@ -285,7 +286,7 @@ function handleControlPress(button, buttonId, command, icon) {
 }
 
 function handleControlRelease() {
-    if (!lockToggle.checked) {
+    if (!lockToggle.checked && repeatCommandIntervalId) {
         stopAllCommands()
     }
 }
@@ -308,6 +309,8 @@ function handleMqttMessage(topic, message) {
             resetGestureDisplays()
             updateConnectionStatus()
         }, ESP32_DATA_TIMEOUT)
+
+        isEsp32Online = true
         // === WATCHDOG LOGIC END ===
 
         try { // process web data
@@ -457,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Set up event listeners
     gestureToggle.addEventListener("change", () => {
-        stopAllCommands() // stop all commands
+        setTimeout(stopAllCommands, 500) // stop all commands in 500ms
 
         const isEnabled = gestureToggle.checked
         updateGestureToggleLabel()
