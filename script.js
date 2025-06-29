@@ -115,8 +115,8 @@ function sendCommand(char) {
     }
 }
 
-function publishGestureMode(isEnabled) {
-    const payload = isEnabled ? "gesture" : "manual"
+function publishGestureMode(isInGestureMode) {
+    const payload = isInGestureMode ? "gesture" : "manual"
     mqttClient.publish(MQTT_CONFIG.topics.mode, payload, { retain: true })
 }
 
@@ -136,10 +136,10 @@ function stopAllCommands() {
 
 
 // ===== UI Update Functions =====
-function updateGestureModeUI(isGestureMode) {
-    controlsArea.classList.toggle('gesture-mode-active', isGestureMode)
+function updateGestureModeUI(isInGestureMode) {
+    controlsArea.classList.toggle('gesture-mode-active', isInGestureMode)
 
-    if (isGestureMode) {
+    if (isInGestureMode) {
         if (!areGaugesInitialized) {
             setTimeout(() => {
                 initGauges()
@@ -156,7 +156,9 @@ function updateGestureModeUI(isGestureMode) {
 }
 
 function updateGestureToggleLabel() {
-    gestureToggleLabel.textContent = gestureToggle.checked ? "Gesture Mode" : "Manual Mode"
+    const isInGestureMode = gestureToggle.checked
+    gestureToggleLabel.textContent = isInGestureMode ? "Gesture Mode" : "Manual Mode"
+    feedbackDisplay.classList.toggle("manual-mode", !isInGestureMode) // Add class for manual mode
 }
 
 function updateLockUI() {
@@ -295,9 +297,9 @@ function handleMqttMessage(topic, message) {
     const payload = message.toString()
 
     if (topic === MQTT_CONFIG.topics.mode) { // Handle different topics
-        const isGestureMode = payload === "gesture"
-        gestureToggle.checked = isGestureMode
-        updateGestureModeUI(isGestureMode)
+        const isInGestureMode = payload === "gesture"
+        gestureToggle.checked = isInGestureMode
+        updateGestureModeUI(isInGestureMode)
         updateGestureToggleLabel()
 
     } else if (topic === MQTT_CONFIG.topics.web) { // Handle web data
@@ -462,10 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
     gestureToggle.addEventListener("change", () => {
         setTimeout(stopAllCommands, 500) // stop all commands in 500ms
 
-        const isEnabled = gestureToggle.checked
+        const isInGestureMode = gestureToggle.checked
         updateGestureToggleLabel()
-        publishGestureMode(isEnabled)
-        updateGestureModeUI(isEnabled)
+        publishGestureMode(isInGestureMode)
+        updateGestureModeUI(isInGestureMode)
         updateConnectionStatus()
     })
 

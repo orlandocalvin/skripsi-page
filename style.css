@@ -367,6 +367,10 @@ input:checked+.switch-lever:before {
     color: #ecf0f1;
 }
 
+.feedback-display.manual-mode {
+    min-height: 30vmin;
+}
+
 .card-orientation-dashboard {
     display: flex;
     flex-direction: column;
@@ -564,6 +568,5 @@ input:checked+.switch-lever:before {
         width: 85%;
         font-size: clamp(2em, 18vmin, 6em);
         box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.35);
-        min-height: 30vmin;
     }
 }
