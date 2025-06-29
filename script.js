@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Set up event listeners
     gestureToggle.addEventListener("change", () => {
-        setTimeout(stopAllCommands, 500) // stop all commands in 500ms
+        setTimeout(stopAllCommands, 600) // stop all commands in 600ms
 
         const isInGestureMode = gestureToggle.checked
         updateGestureToggleLabel()
